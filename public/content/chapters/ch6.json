@@ -1,0 +1,48 @@
+{
+  "actors": [
+    {
+      "height": 280,
+      "id": "betu",
+      "pose": "stand",
+      "x": 0.25,
+      "y": 0.72
+    },
+    {
+      "height": 240,
+      "id": "bholu",
+      "pose": "stand",
+      "x": 0.38,
+      "y": 0.74
+    },
+    {
+      "height": 320,
+      "id": "topiwala",
+      "pose": "sit-cross",
+      "x": 0.58,
+      "y": 0.74
+    },
+    {
+      "height": 200,
+      "id": "monkey",
+      "pose": "arms-up",
+      "x": 0.82,
+      "y": 0.3,
+      "hat": "red"
+    }
+  ],
+  "background": "jungle",
+  "id": "ch6",
+  "lines": [
+    "idea",
+    "test_plan"
+  ],
+  "linesAfter": [
+    "validated"
+  ],
+  "minigame": "copycat-dance",
+  "next": "ch7",
+  "title": {
+    "en": "The Copycat Monkeys",
+    "hi": "नकलची बंदर"
+  }
+}

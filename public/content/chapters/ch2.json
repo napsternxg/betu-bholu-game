@@ -1,0 +1,39 @@
+{
+  "actors": [
+    {
+      "height": 340,
+      "id": "topiwala",
+      "pose": "eat",
+      "x": 0.35,
+      "y": 0.72
+    },
+    {
+      "height": 200,
+      "id": "monkey",
+      "pose": "sit",
+      "x": 0.78,
+      "y": 0.3
+    },
+    {
+      "height": 200,
+      "id": "monkey",
+      "pose": "sit",
+      "x": 0.88,
+      "y": 0.38
+    }
+  ],
+  "background": "jungle",
+  "id": "ch2",
+  "lines": [
+    "tree_spot",
+    "rest_think",
+    "shade"
+  ],
+  "linesAfter": [],
+  "minigame": null,
+  "next": "ch3",
+  "title": {
+    "en": "Shade of the Mango Tree",
+    "hi": "आम के पेड़ की छाँव"
+  }
+}

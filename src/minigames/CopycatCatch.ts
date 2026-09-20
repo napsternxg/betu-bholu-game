@@ -1,0 +1,122 @@
+import Phaser from 'phaser';
+import { Character } from '../core/Character';
+import { HatSystem } from '../core/HatSystem';
+import { audio } from '../core/AudioManager';
+import type { HatColor } from '../core/types';
+import { type MiniGame, type MiniGameHost, panel, label } from './MiniGame';
+
+// Ch 7: the signature trick. Drag the topiwala's red hat to the ground.
+// Monkeys copy one by one and throw theirs; tap each falling hat to catch it.
+export class CopycatCatch implements MiniGame {
+  constructor(private host: MiniGameHost) {}
+
+  start(onDone: (r: { score: number }) => void): void {
+    const { scene, overlay, dialogue } = this.host;
+    const { cx, cy } = panel(this.host, 1140, 700);
+    label(this.host, cx, cy - 305, dialogue.line('catch_instruction'), 30);
+
+    const topi = new Character(scene, 'topiwala', 'stand', cx - 430, cy + 190, 300);
+    // No game-layer hat: his red cap is painted in the sprite. The draggable
+    // hat starts exactly on the painted cap (measured from the sprite).
+    overlay.add(topi.container);
+
+    // Draggable copy of the red hat, starts on his head
+    const dragHat = HatSystem.make(scene, 'red');
+    dragHat.setDisplaySize(90, 74);
+    dragHat.setPosition(cx - 433, cy - 75);
+    dragHat.setInteractive({ useHandCursor: true, draggable: true } as Phaser.Types.Input.InputConfiguration);
+    overlay.add(dragHat);
+    scene.input.setDraggable(dragHat);
+
+    // Ground line
+    const groundY = cy + 300;
+    overlay.add(scene.add.rectangle(cx, groundY, 1020, 8, 0x8b5a2b));
+
+    // Basket + counter
+    const basketX = cx - 80;
+    const basket = scene.add.ellipse(basketX, groundY - 20, 170, 80, 0xb08968).setStrokeStyle(5, 0x6f4e2e);
+    overlay.add(basket);
+    const colors: HatColor[] = ['blue', 'yellow', 'green', 'red'];
+    const total = colors.length;
+    let caught = 0;
+    const counter = label(this.host, cx + 430, cy - 280, `🧺 0/${total}`, 34);
+
+    // Monkeys in the tree, each wearing a stolen hat (kept clear of the title)
+    const monkeys = colors.map((color, i) => {
+      const m = new Character(scene, 'monkey', 'sit', cx + 30 + i * 160, cy - 30, 200);
+      m.setHat(color);
+      overlay.add(m.container);
+      return m;
+    });
+
+    let thrown = false;
+    const cleanup = () => {
+      scene.input.off('drag');
+      scene.input.off('dragend');
+    };
+
+    const onDrag = (
+      _pointer: Phaser.Input.Pointer,
+      gameObject: Phaser.GameObjects.GameObject,
+      dragX: number,
+      dragY: number,
+    ) => {
+      if (gameObject === dragHat && !thrown) dragHat.setPosition(dragX, dragY);
+    };
+    const onDragEnd = (_pointer: Phaser.Input.Pointer, gameObject: Phaser.GameObjects.GameObject) => {
+      if (gameObject !== dragHat || thrown) return;
+      if (dragHat.y > groundY - 60) {
+        thrown = true;
+        audio.whoosh();
+        dragHat.disableInteractive();
+        topi.play('tip-hat');
+        // Monkeys copy one by one
+        colors.forEach((color, i) => {
+          scene.time.delayedCall(700 * (i + 1), () => {
+            const m = monkeys[i];
+            m.play('throw');
+            m.setHat(null);
+            const falling = HatSystem.make(scene, color);
+            falling.setDisplaySize(100, 82);
+            falling.setPosition(m.container.x, m.container.y - 40);
+            falling.setInteractive({ useHandCursor: true });
+            overlay.add(falling);
+            scene.tweens.add({
+              targets: falling,
+              y: groundY - 40,
+              duration: 1300,
+              ease: 'Bounce.easeOut',
+            });
+            falling.on('pointerdown', () => {
+              falling.disableInteractive();
+              audio.pop();
+              scene.tweens.add({
+                targets: falling,
+                x: basketX,
+                y: groundY - 20,
+                duration: 400,
+                onComplete: () => {
+                  falling.destroy();
+                  caught++;
+                  counter.setText(`🧺 ${caught}/${total}`);
+                  if (caught >= total) {
+                    audio.fanfare();
+                    scene.time.delayedCall(700, () => {
+                      cleanup();
+                      onDone({ score: caught });
+                    });
+                  }
+                },
+              });
+            });
+          });
+        });
+      } else {
+        scene.tweens.add({ targets: dragHat, x: cx - 433, y: cy - 75, duration: 300 });
+      }
+    };
+
+    scene.input.on('drag', onDrag);
+    scene.input.on('dragend', onDragEnd);
+  }
+}

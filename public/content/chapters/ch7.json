@@ -1,0 +1,58 @@
+{
+  "actors": [
+    {
+      "height": 340,
+      "id": "topiwala",
+      "pose": "stand",
+      "x": 0.22,
+      "y": 0.72
+    },
+    {
+      "hat": "blue",
+      "height": 190,
+      "id": "monkey",
+      "pose": "sit",
+      "x": 0.62,
+      "y": 0.26
+    },
+    {
+      "hat": "yellow",
+      "height": 190,
+      "id": "monkey",
+      "pose": "sit",
+      "x": 0.72,
+      "y": 0.32
+    },
+    {
+      "hat": "green",
+      "height": 190,
+      "id": "monkey",
+      "pose": "sit",
+      "x": 0.82,
+      "y": 0.26
+    },
+    {
+      "hat": "red",
+      "height": 190,
+      "id": "monkey",
+      "pose": "sit",
+      "x": 0.9,
+      "y": 0.34
+    }
+  ],
+  "background": "jungle",
+  "id": "ch7",
+  "lines": [
+    "throw_ask"
+  ],
+  "linesAfter": [
+    "monkeys_copy",
+    "collect"
+  ],
+  "minigame": "copycat-catch",
+  "next": "ch8",
+  "title": {
+    "en": "Throw the Hat!",
+    "hi": "टोपी फेंको!"
+  }
+}

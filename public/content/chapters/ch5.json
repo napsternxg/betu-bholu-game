@@ -1,0 +1,55 @@
+{
+  "actors": [
+    {
+      "height": 340,
+      "id": "topiwala",
+      "pose": "confused",
+      "x": 0.35,
+      "y": 0.72
+    },
+    {
+      "height": 280,
+      "id": "betu",
+      "pose": "stand",
+      "x": 0.6,
+      "y": 0.72
+    },
+    {
+      "height": 240,
+      "id": "bholu",
+      "pose": "stand",
+      "x": 0.72,
+      "y": 0.74
+    },
+    {
+      "hat": "blue",
+      "height": 180,
+      "id": "monkey",
+      "pose": "sit",
+      "x": 0.82,
+      "y": 0.24
+    },
+    {
+      "hat": "yellow",
+      "height": 180,
+      "id": "monkey",
+      "pose": "sit",
+      "x": 0.9,
+      "y": 0.32
+    }
+  ],
+  "background": "jungle",
+  "id": "ch5",
+  "lines": [
+    "wake",
+    "worry",
+    "betu_tell"
+  ],
+  "linesAfter": [],
+  "minigame": null,
+  "next": "ch6",
+  "title": {
+    "en": "The Hats Are Gone!",
+    "hi": "टोपियाँ गायब!"
+  }
+}
