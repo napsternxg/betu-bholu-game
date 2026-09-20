@@ -1,0 +1,24 @@
+{
+  "actors": [
+    {
+      "height": 340,
+      "id": "topiwala",
+      "pose": "sleep",
+      "x": 0.5,
+      "y": 0.74
+    }
+  ],
+  "background": "yard",
+  "effect": "dream",
+  "id": "ch3",
+  "lines": [
+    "dream_1"
+  ],
+  "linesAfter": [],
+  "minigame": null,
+  "next": "ch4",
+  "title": {
+    "en": "The Hat Seller's Dream",
+    "hi": "टोपीवाले का सपना"
+  }
+}

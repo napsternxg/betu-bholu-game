@@ -1,0 +1,29 @@
+{
+  "actors": [
+    {
+      "height": 340,
+      "id": "topiwala",
+      "pose": "walk",
+      "x": 0.5,
+      "y": 0.7
+    }
+  ],
+  "background": "jungle",
+  "id": "ch1",
+  "lines": [
+    "topi_song_1",
+    "topi_song_2"
+  ],
+  "linesAfter": [],
+  "minigame": null,
+  "next": "ch2",
+  "song": "topiwala",
+  "songLines": [
+    "topi_song_1",
+    "topi_song_2"
+  ],
+  "title": {
+    "en": "A Sunny Day",
+    "hi": "धूप वाला दिन"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "actors": [
+    {
+      "height": 340,
+      "id": "topiwala",
+      "pose": "walk",
+      "x": 0.5,
+      "y": 0.7
+    },
+    {
+      "hat": "picked",
+      "height": 280,
+      "id": "betu",
+      "pose": "wave",
+      "x": 0.28,
+      "y": 0.72
+    },
+    {
+      "hat": "picked",
+      "height": 240,
+      "id": "bholu",
+      "pose": "wave",
+      "x": 0.72,
+      "y": 0.74
+    }
+  ],
+  "background": "jungle",
+  "id": "ch9",
+  "lines": [
+    "reprise",
+    "goodbye"
+  ],
+  "linesAfter": [],
+  "minigame": null,
+  "next": null,
+  "song": "topiwala",
+  "songLines": [
+    "reprise"
+  ],
+  "title": {
+    "en": "Hats for Sale!",
+    "hi": "टोपी ले लो!"
+  }
+}

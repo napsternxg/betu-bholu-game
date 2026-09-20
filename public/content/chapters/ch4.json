@@ -1,0 +1,40 @@
+{
+  "actors": [
+    {
+      "height": 280,
+      "id": "betu",
+      "pose": "stand",
+      "x": 0.28,
+      "y": 0.72
+    },
+    {
+      "height": 240,
+      "id": "bholu",
+      "pose": "stand",
+      "x": 0.42,
+      "y": 0.74
+    },
+    {
+      "height": 320,
+      "id": "topiwala",
+      "pose": "sleep",
+      "x": 0.62,
+      "y": 0.76
+    }
+  ],
+  "background": "village",
+  "id": "ch4",
+  "lines": [
+    "betu_spot",
+    "bholu_pick"
+  ],
+  "linesAfter": [
+    "monkeys_steal"
+  ],
+  "minigame": "hat-picker",
+  "next": "ch5",
+  "title": {
+    "en": "Betu and Bholu's Hats",
+    "hi": "बेटू और भोलू की टोपी"
+  }
+}

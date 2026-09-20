@@ -1,0 +1,41 @@
+{
+  "actors": [
+    {
+      "height": 340,
+      "id": "topiwala",
+      "pose": "hold-hats",
+      "x": 0.35,
+      "y": 0.72
+    },
+    {
+      "hat": "picked",
+      "height": 280,
+      "id": "betu",
+      "pose": "stand",
+      "x": 0.6,
+      "y": 0.72
+    },
+    {
+      "hat": "picked",
+      "height": 240,
+      "id": "bholu",
+      "pose": "stand",
+      "x": 0.73,
+      "y": 0.74
+    }
+  ],
+  "background": "jungle",
+  "id": "ch8",
+  "lines": [
+    "gift_offer",
+    "polite_refuse",
+    "first_sale"
+  ],
+  "linesAfter": [],
+  "minigame": null,
+  "next": "ch9",
+  "title": {
+    "en": "The First Sale",
+    "hi": "पहली बिक्री"
+  }
+}
