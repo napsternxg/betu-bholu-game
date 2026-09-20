@@ -3,6 +3,7 @@ import { dialogue } from '../core/DialogueSystem';
 import { save } from '../core/SaveManager';
 import { audio } from '../core/AudioManager';
 import { Character } from '../core/Character';
+import { bindShortcuts } from '../core/Shortcuts';
 
 const FONT = '"Baloo 2", sans-serif';
 
@@ -107,6 +108,16 @@ export class TitleScene extends Phaser.Scene {
     });
 
     this.renderText();
+
+    // L toggles Hindi/English, ? shows the shortcut help.
+    bindShortcuts(this, {
+      canUse: () => true,
+      onToggleLang: () => {
+        const lang = dialogue.toggle();
+        save.setLang(lang);
+        this.renderText();
+      },
+    });
   }
 
   private renderText(): void {

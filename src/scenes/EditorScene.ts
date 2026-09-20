@@ -4,6 +4,7 @@ import { dialogue } from '../core/DialogueSystem';
 import { save } from '../core/SaveManager';
 import { Character } from '../core/Character';
 import { POSES, BACKGROUNDS, type ChapterJSON, type HatColor } from '../core/types';
+import { bindShortcuts } from '../core/Shortcuts';
 
 const FONT = '"Baloo 2", sans-serif';
 const CHAR_IDS = ['betu', 'bholu', 'topiwala', 'monkey'];
@@ -47,6 +48,13 @@ export class EditorScene extends Phaser.Scene {
     this.renderChapter();
     this.wireDrag();
     if (storyData.usingOverrides) this.toast('Loaded your saved edits');
+
+    // Esc exits to the title page (same as ✕ Done), ? shows shortcut help.
+    // Disabled while a text/JSON modal is open so typing is never hijacked.
+    bindShortcuts(this, {
+      canUse: () => !document.querySelector('[data-story-modal]'),
+      onHome: () => this.scene.start('title', { chapterId: 'ch1' }),
+    });
   }
 
   // ---------- toolbar ----------
@@ -372,6 +380,9 @@ export class EditorScene extends Phaser.Scene {
 
   private modalShell(title: string): { wrap: HTMLDivElement; body: HTMLDivElement } {
     const wrap = document.createElement('div');
+    // Tagged so keyboard shortcuts can tell a modal is open (don't hijack
+    // keystrokes while the parent is typing in a textarea).
+    wrap.setAttribute('data-story-modal', '1');
     wrap.style.cssText =
       'position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:9999;';
     const box = document.createElement('div');

@@ -3,6 +3,7 @@ import { dialogue } from '../core/DialogueSystem';
 import { save } from '../core/SaveManager';
 import { audio } from '../core/AudioManager';
 import { Character } from '../core/Character';
+import { bindShortcuts } from '../core/Shortcuts';
 
 const FONT = '"Baloo 2", sans-serif';
 
@@ -93,6 +94,22 @@ export class EndScene extends Phaser.Scene {
     });
 
     this.renderText();
+
+    // L toggles Hindi/English, Esc returns to the title page, ? shows help.
+    bindShortcuts(this, {
+      canUse: () => true,
+      onToggleLang: () => {
+        const lang = dialogue.toggle();
+        save.setLang(lang);
+        this.renderText();
+      },
+      onHome: () => {
+        audio.tap(this);
+        audio.unlock();
+        save.clearProgress();
+        this.scene.start('title', { chapterId: 'ch1' });
+      },
+    });
   }
 
   private renderText(): void {

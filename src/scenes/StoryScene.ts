@@ -9,6 +9,7 @@ import type { MiniGame, MiniGameHost } from '../minigames/MiniGame';
 import { HatPicker } from '../minigames/HatPicker';
 import { CopycatDance } from '../minigames/CopycatDance';
 import { CopycatCatch } from '../minigames/CopycatCatch';
+import { bindShortcuts } from '../core/Shortcuts';
 
 const MINIGAMES: Record<string, new (host: MiniGameHost) => MiniGame> = {
   'hat-picker': HatPicker,
@@ -59,6 +60,16 @@ export class StoryScene extends Phaser.Scene {
     this.drawActors();
     this.drawChrome();
     this.showLine();
+
+    // Parent keyboard shortcuts: → next line, ← previous line,
+    // L Hindi/English, Esc title page, ? shortcut help.
+    bindShortcuts(this, {
+      canUse: () => this.overlay === null,
+      onPrev: () => this.goBack(),
+      onNext: () => this.advanceGuarded(),
+      onToggleLang: () => this.toggleLang(),
+      onHome: () => this.goHome(),
+    });
   }
 
   // ---- background ----
@@ -116,14 +127,7 @@ export class StoryScene extends Phaser.Scene {
       new Phaser.Geom.Rectangle(-48, -48, 96, 96),
       Phaser.Geom.Rectangle.Contains,
     );
-    this.nextBtn.on('pointerdown', () => {
-      // Touch screens can double-fire pointerdown; ignore repeats < 600ms
-      const now = this.time.now;
-      if (now - this.lastAdvance < 600) return;
-      this.lastAdvance = now;
-      audio.tap(this);
-      this.advance();
-    });
+    this.nextBtn.on('pointerdown', () => this.advanceGuarded());
 
     // Language toggle: हिं | EN (Hindi default)
     this.langBtn = this.add
@@ -136,14 +140,7 @@ export class StoryScene extends Phaser.Scene {
       })
       .setOrigin(1, 0)
       .setInteractive({ useHandCursor: true });
-    this.langBtn.on('pointerdown', () => {
-      const lang = dialogue.toggle();
-      save.setLang(lang);
-      audio.setLang(lang);
-      audio.preloadVoices([...this.chapter.lines, ...this.chapter.linesAfter], lang);
-      this.langBtn.setText(this.langLabel());
-      this.showLine(); // re-render current line in the new language
-    });
+    this.langBtn.on('pointerdown', () => this.toggleLang());
 
     // Mute button (for parents)
     const mute = this.add
@@ -169,6 +166,47 @@ export class StoryScene extends Phaser.Scene {
 
   private langLabel(): string {
     return dialogue.lang === 'hi' ? 'हिंदी | EN' : 'HI | English';
+  }
+
+  private toggleLang(): void {
+    const lang = dialogue.toggle();
+    save.setLang(lang);
+    audio.setLang(lang);
+    audio.preloadVoices([...this.chapter.lines, ...this.chapter.linesAfter], lang);
+    this.langBtn.setText(this.langLabel());
+    this.showLine(); // re-render current line in the new language
+  }
+
+  private advanceGuarded(): void {
+    // Touch screens can double-fire pointerdown; ignore repeats < 600ms.
+    // Keyboard auto-repeat is throttled by the same guard.
+    const now = this.time.now;
+    if (now - this.lastAdvance < 600) return;
+    this.lastAdvance = now;
+    audio.tap(this);
+    this.advance();
+  }
+
+  // ← key: step back one dialogue line so parents can re-read/re-hear it.
+  private goBack(): void {
+    if (this.lineIndex > 0) {
+      this.lineIndex--;
+    } else if (this.inLinesAfter && this.chapter.lines.length > 0) {
+      // Back over the mini-game into the pre-game lines. Advancing again
+      // replays the mini-game (harmless — completion state is kept).
+      this.inLinesAfter = false;
+      this.lineIndex = this.chapter.lines.length - 1;
+    } else {
+      return; // already at the first line of the chapter
+    }
+    this.showLine();
+  }
+
+  // Esc key: straight back to the title page.
+  private goHome(): void {
+    audio.stopVoice();
+    audio.stopSong();
+    this.scene.start('title', { chapterId: 'ch1' });
   }
 
   private currentLines(): string[] {

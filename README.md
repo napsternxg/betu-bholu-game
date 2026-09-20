@@ -41,3 +41,224 @@ npm run dev       # play at http://localhost:5173
 - No fail states: mini-games gently retry. Big touch targets.
 - New language = one new file in  `public/content/dialogue/`.
 - New mini-game = one class implementing `MiniGame`, registered in `StoryScene`.
+
+## How the game is packaged
+
+Workspace layout:
+
+| Path | What it is |
+|---|---|
+| `src/` | TypeScript + Phaser 3 game code (`core/`, `scenes/`, `minigames/`) |
+| `public/` | Static files, copied verbatim to the build output root by Vite |
+| `public/content/` | The story itself: `chapters/ch1..ch9.json`, `dialogue/hi.json` + `en.json`, `hats.json`, `audio/` |
+| `public/assets/` | Sliced sprites, hats, backgrounds |
+| `tools/` | Reproducible pipeline scripts (slicing, story-JSON apply, defringe) |
+| `website/landing.html` | Marketing page linking into the game |
+| `index.html` | Entry page (`<div id="game-root">` + `<script src="/src/main.ts">`), Hindi `<html lang="hi">` |
+| `vite.config.ts` | `base: './'`, `build.outDir: 'dist'`, `assetsInlineLimit: 0` |
+| `package.json` | `dev` → `vite`, `build` → `tsc && vite build`, `preview` → `vite preview`, `slice` → `python3 tools/slice-sprites.py` |
+
+Build and run:
+
+```bash
+npm install
+npm run build    # tsc && vite build -> dist/
+npm run dev      # play at http://localhost:5173
+```
+
+`content/` lives at `public/content/` (not `src/`) because Vite copies everything
+under `public/` to the `dist/` root unchanged — that is how `content/audio/hi/<id>.mp3`
+ends up served as `content/audio/hi/<id>.mp3`, which is exactly the URL
+`AudioManager` fetches at runtime.
+
+Story defaults come from the shipped JSON, overlaid at boot with any editor
+snapshot the parent saved in their browser (`BootScene` → `storyData.load()`).
+To bake an editor-exported snapshot into the shipped defaults:
+
+```bash
+# 1. Paste the editor's exported JSON into /tmp/story.json
+#    (it must have app: "betu-bholu-story", dialogue.hi/en, and chapters ch1..ch9 in order)
+python3 tools/apply-story-json.py /tmp/story.json
+#    validates the snapshot, then overwrites:
+#      public/content/dialogue/hi.json, public/content/dialogue/en.json
+#      public/content/chapters/ch1.json ... ch9.json
+npm run build
+```
+
+The hosted artifact is produced from this workspace by the artifact builder and
+served on a public Cloudflare link (currently
+https://muse.ai/s/betu-bholu-s-jungle-adventure-xdh6gx03xgnzbr).
+Each publish needs explicit approval; the link always serves the last published build.
+
+Distributable project zip (regenerate with `node_modules/` and `dist/` excluded):
+
+```bash
+cd ~/workspace/betu-bholu-game
+zip -r ~/workspace/goals/betu-bholu-s-jungle-adventure-web-game/files/betu-bholu-game.zip . \
+  -x 'node_modules/*' 'dist/*'
+```
+
+Git: `master` is the source of truth — commit story/game changes there with a
+message naming the round or change (e.g. `Round 5: ...`). `code-evolution`
+holds the reconstructed change history (earliest recoverable snapshot first,
+then one commit per round); its tip tree is kept identical to `master`'s
+(verify with `git diff --quiet master code-evolution && echo identical`).
+Never commit `node_modules/` or `dist/` (gitignored).
+
+## How sprites map to characters and poses
+
+Pipeline overview: source art → grid slicing → white-background removal →
+WebP conversion → defringe → game textures keyed `<character>-<pose>`.
+
+**1. Slice the source sheets** (`tools/slice-sprites.py`):
+
+```bash
+npm run slice   # = python3 tools/slice-sprites.py
+```
+
+- Reads `public/assets/source/{betu,bholu,topiwala,monkey,hats}.jpg`.
+- Character sheets are a 4 cols × 3 rows grid, sliced **row-major**; the pose
+  order must match `POSES` in `src/core/types.ts` exactly (the script's own
+  `POSES` dict is a copy of it — keep the two in sync).
+- Each cell is inset by 5.5% per edge to cut neighbor bleed
+  (`INSET_OVERRIDES`, e.g. `('topiwala', 'sleep')`, handles deep intrusions).
+- `remove_white_bg()` flood-fills near-white pixels (threshold 30) to
+  transparent, seeded from the 4 corners. With `from_borders=True` it also
+  seeds from **every border pixel**, which clears background trapped between
+  limbs (e.g. between legs). That is only safe for characters with no
+  near-white costume parts — `BORDER_FILL_SAFE = {'topiwala', 'betu', 'monkey'}`.
+  It is deliberately **not** applied to Bholu's white fur or the white hat master.
+- Writes `public/assets/characters/<id>/<pose>.png` (48 files) and
+  `public/assets/hats/{blue,green,red,yellow}.png` + `hat-white.png` master
+  (from the 3×2 hat grid, `HAT_ORDER = ['blue','yellow','green','red','white']`).
+- Also copies `source/scene.jpg` → `public/assets/backgrounds/jungle.jpg`.
+  (`field.jpg`, `village.jpg`, `yard.jpg` were added later as uploads and are
+  mapped in `BACKGROUNDS` in `src/core/types.ts`.)
+
+**2. Convert PNG → WebP.** The game loads `.webp`, not `.png`
+(`AssetManager.queue()` registers `assets/characters/<id>/<pose>.webp` under the
+texture key `<id>-<pose>`). There is no conversion script checked in — this was
+a manual step, e.g.:
+
+```bash
+python3 -c "
+from PIL import Image
+import glob, os
+for p in glob.glob('public/assets/characters/*/*.png') + glob.glob('public/assets/hats/*.png'):
+    Image.open(p).save(os.path.splitext(p)[0] + '.webp', 'WEBP', quality=90)
+"
+```
+
+**3. Defringe the WebP sprites** (`tools/defringe.py`):
+
+```bash
+python3 tools/defringe.py
+```
+
+Removes the whitish anti-aliased halo the white-background art leaves around
+dark outlines. Critical logic: for each opaque pixel with all channels above
+`THRESH = 170` that touches a transparent pixel, make it transparent
+(`ITERATIONS = 2` catches a 2px fringe); transparent-pixel RGB is scrubbed to
+white first so lossy WebP leaves no gray smears. Runs over
+`public/assets/characters/{bholu,betu,topiwala,monkey}/*.webp`.
+
+**4. How the game uses them.**
+
+- `src/core/AssetManager.ts` queues every `<id>-<pose>` texture plus
+  `hat-white` and `bg-<key>` (from `BACKGROUNDS`) in `BootScene.preload()`.
+- `src/core/Character.ts`: `new Character(scene, id, pose, x, y, height = 300)`
+  creates the body image from texture `<id>-<pose>`, scales it to `height` px
+  tall (width proportional), and treats `y` as the **feet** position (container
+  shifted up by `height/2`). `play(pose)` swaps the texture while keeping the
+  height; `flip` mirrors via container scale.
+- Chapter JSON actors (`ActorRef` in `src/core/types.ts`) pick the sprite:
+  `{ "id": "monkey", "pose": "arms-up", "x": 0.5, "y": 0.62, "height": 280,
+  "flip": false, "hat": "red" }` — `x`/`y` are 0..1 screen fractions,
+  `height` defaults to 300, `pose` must be a name from `POSES[id]`,
+  `hat` is a color, `'picked'` (HatPicker choice), or null.
+- Hats are a separate layer pinned to head anchors (`HatSystem`): the anchor
+  comes from `public/content/hats.json` via `anchorFor(id, pose)`
+  (`{ox, oy, w}` as fractions of body size; default `{ox: 0, oy: -0.42, w: 0.46}`).
+  Phaser 3.90 Canvas ignores `setTint`, so `HatSystem.bakeTints()` runs once in
+  `BootScene.create()` and bakes `hat-<color>` canvas textures from the
+  `hat-white` master: draw master → `globalCompositeOperation = 'multiply'`,
+  fill the tint color → `'destination-in'`, draw master again (restores the
+  alpha that multiply would destroy) → `tex.refresh()`. Palette:
+  red `0xe23b3b`, blue `0x2f80ed`, yellow `0xf2c230`, green `0x2fae5f`.
+- The topiwala's red cap is **painted directly in his sprites**, so chapters
+  never assign him a game-layer hat — no `hat: "red"` on topiwala actors.
+
+## How voiceovers are generated
+
+Voiceover clips are pre-rendered MP3s. The game looks them up by dialogue line
+id, so voicing new text = synthesizing one MP3 per line id per language and
+dropping it in the right folder.
+
+**Voice cast** (ids verified in the TTS voice catalog; copy verbatim):
+
+| Character | `--voice` id | Notes |
+|---|---|---|
+| Narrator | `avocado_v2:MAI_01` | "Warm" Meta AI voice |
+| Topiwala (speech **and** song) | `avocado_v2:MAI_01` | Same warm voice — his speaking and singing must match |
+| Betu | `avocado_v2:rumi` | |
+| Bholu | `avocado_v2:chip` | |
+
+**Recipe for one speech clip** (speed 95 for speech):
+
+```bash
+tts speak --text "टोपीवाला गाता है: टोपी ले लो! टोपी ले लो!" \
+  --voice avocado_v2:MAI_01 \
+  --language hi \
+  --speed 95 \
+  --output public/content/audio/hi/topi_song_1.mp3
+```
+
+For English, use `--language en` and write to `public/content/audio/en/<line-id>.mp3`.
+The file name must match the dialogue line id exactly — `AudioManager.voiceUrl()`
+fetches `content/audio/<lang>/<lineId>.mp3`, `preloadVoices()` preloads the
+chapter's ids, and `playVoice()` plays the current line's clip (missing files
+fail silently, text still shows).
+
+**The Hindi topiwala chant** (`public/content/audio/song_hi.mp3`, ~10.5s).
+The backend truncates long Hindi chant text containing hyphens/exclamations,
+so synthesize the two halves **separately with plain words, no hyphens**,
+at song speed 100, then concatenate A+B+A+B:
+
+```bash
+tts speak --text "टोपी ले लो! टोपी ले लो!" \
+  --voice avocado_v2:MAI_01 --language hi --speed 100 \
+  --output /tmp/chant_a.mp3
+
+tts speak --text "लाल पीली टोपी ले लो हरी नीली टोपी ले लो" \
+  --voice avocado_v2:MAI_01 --language hi --speed 100 \
+  --output /tmp/chant_b.mp3
+
+ffmpeg -v error -i /tmp/chant_a.mp3 -i /tmp/chant_b.mp3 \
+  -filter_complex "[0:a][1:a][0:a][1:a]concat=n=4:v=0:a=1" \
+  -y public/content/audio/song_hi.mp3
+```
+
+**Verify every clip** — truncated renders must be redone (this exact check is
+what caught the 2.5s chant bug):
+
+```bash
+python3 -c "
+import subprocess
+out = subprocess.run(['ffmpeg','-v','error','-i','public/content/audio/song_hi.mp3',
+                      '-f','s16le','-ac','1','-ar','44100','-'], capture_output=True)
+print('duration:', round(len(out.stdout)/2/44100, 2), 's')
+"
+# expect ~10.56 for song_hi.mp3; a speech clip rendering far shorter than its
+# text warrants (e.g. under a second) means truncation — re-synthesize it.
+```
+
+**On TTS failure:** retry the *identical* request on a backoff ladder
+(~5 min, ~10 min, ~30 min, ~1 hour) — never switch voice or engine; a failed
+request does not mean the voice is wrong. If it still fails after the ~1h
+retry, stop and report the error.
+
+**How the song plays:** `AudioManager.playSong(lang)` loops
+`content/audio/song_<lang>.mp3` (volume 0.9); `stopSong()` ends it.
+`StoryScene.showLine()` skips voiceover for any line id listed in the
+chapter's `songLines` so the narration never talks over the chant, and
+`setLang()` swaps the song mid-loop when the language toggle is pressed.
