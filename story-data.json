@@ -1,0 +1,518 @@
+{
+  "version": 1,
+  "chapters": {
+    "ch1": {
+      "actors": [
+        {
+          "height": 340,
+          "id": "topiwala",
+          "pose": "walk",
+          "x": 0.33,
+          "y": 0.78
+        }
+      ],
+      "background": "jungle",
+      "id": "ch1",
+      "lines": [
+        "topi_song_1",
+        "topi_song_2"
+      ],
+      "linesAfter": [],
+      "minigame": null,
+      "next": "ch2",
+      "title": {
+        "en": "A Sunny Day",
+        "hi": "धूप वाला दिन"
+      }
+    },
+    "ch2": {
+      "actors": [
+        {
+          "height": 340,
+          "id": "topiwala",
+          "pose": "eat",
+          "x": 0.35,
+          "y": 0.79
+        },
+        {
+          "height": 200,
+          "id": "monkey",
+          "pose": "sit",
+          "x": 0.78,
+          "y": 0.3
+        },
+        {
+          "height": 200,
+          "id": "monkey",
+          "pose": "sit",
+          "x": 0.88,
+          "y": 0.38
+        }
+      ],
+      "background": "jungle",
+      "id": "ch2",
+      "lines": [
+        "tree_spot",
+        "rest_think",
+        "shade"
+      ],
+      "linesAfter": [],
+      "minigame": null,
+      "next": "ch3",
+      "title": {
+        "en": "Shade of the Mango Tree",
+        "hi": "आम के पेड़ की छाँव"
+      }
+    },
+    "ch3": {
+      "actors": [
+        {
+          "height": 190,
+          "id": "topiwala",
+          "pose": "sleep",
+          "x": 0.8,
+          "y": 0.7,
+          "flip": true
+        }
+      ],
+      "background": "yard",
+      "effect": "dream",
+      "id": "ch3",
+      "lines": [
+        "dream_1"
+      ],
+      "linesAfter": [],
+      "minigame": null,
+      "next": "ch4",
+      "title": {
+        "en": "The Hat Seller's Dream",
+        "hi": "टोपीवाले का सपना"
+      }
+    },
+    "ch4": {
+      "actors": [
+        {
+          "height": 280,
+          "id": "betu",
+          "pose": "stand",
+          "x": 0.77,
+          "y": 0.76,
+          "flip": true
+        },
+        {
+          "height": 240,
+          "id": "bholu",
+          "pose": "stand",
+          "x": 0.9,
+          "y": 0.76,
+          "flip": true
+        },
+        {
+          "height": 115,
+          "id": "topiwala",
+          "pose": "sleep",
+          "x": 0.2,
+          "y": 0.62,
+          "flip": true
+        }
+      ],
+      "background": "field",
+      "id": "ch4",
+      "lines": [
+        "betu_spot",
+        "bholu_pick"
+      ],
+      "linesAfter": [
+        "monkeys_steal"
+      ],
+      "minigame": "hat-picker",
+      "next": "ch5",
+      "title": {
+        "en": "Betu and Bholu's Hats",
+        "hi": "बेटू और भोलू की टोपी"
+      }
+    },
+    "ch5": {
+      "actors": [
+        {
+          "height": 340,
+          "id": "topiwala",
+          "pose": "confused",
+          "x": 0.35,
+          "y": 0.77
+        },
+        {
+          "height": 280,
+          "id": "betu",
+          "pose": "stand",
+          "x": 0.6,
+          "y": 0.75,
+          "flip": true
+        },
+        {
+          "height": 240,
+          "id": "bholu",
+          "pose": "stand",
+          "x": 0.76,
+          "y": 0.76,
+          "flip": true
+        },
+        {
+          "hat": "blue",
+          "height": 180,
+          "id": "monkey",
+          "pose": "sit",
+          "x": 0.82,
+          "y": 0.24
+        },
+        {
+          "hat": "yellow",
+          "height": 180,
+          "id": "monkey",
+          "pose": "sit",
+          "x": 0.9,
+          "y": 0.32
+        }
+      ],
+      "background": "jungle",
+      "id": "ch5",
+      "lines": [
+        "wake",
+        "worry",
+        "betu_tell"
+      ],
+      "linesAfter": [],
+      "minigame": null,
+      "next": "ch6",
+      "title": {
+        "en": "The Hats Are Gone!",
+        "hi": "टोपियाँ गायब!"
+      }
+    },
+    "ch6": {
+      "actors": [
+        {
+          "height": 280,
+          "id": "betu",
+          "pose": "stand",
+          "x": 0.24,
+          "y": 0.75
+        },
+        {
+          "height": 240,
+          "id": "bholu",
+          "pose": "stand",
+          "x": 0.38,
+          "y": 0.76
+        },
+        {
+          "height": 320,
+          "id": "topiwala",
+          "pose": "sit-cross",
+          "x": 0.6,
+          "y": 0.77,
+          "flip": true
+        },
+        {
+          "height": 200,
+          "id": "monkey",
+          "pose": "arms-up",
+          "x": 0.82,
+          "y": 0.3,
+          "hat": "red"
+        }
+      ],
+      "background": "jungle",
+      "id": "ch6",
+      "lines": [
+        "idea",
+        "test_plan"
+      ],
+      "linesAfter": [
+        "validated"
+      ],
+      "minigame": "copycat-dance",
+      "next": "ch7",
+      "title": {
+        "en": "The Copycat Monkeys",
+        "hi": "नकलची बंदर"
+      }
+    },
+    "ch7": {
+      "actors": [
+        {
+          "height": 340,
+          "id": "topiwala",
+          "pose": "stand",
+          "x": 0.22,
+          "y": 0.77
+        },
+        {
+          "hat": "blue",
+          "height": 115,
+          "id": "monkey",
+          "pose": "sit",
+          "x": 0.22,
+          "y": 0.17
+        },
+        {
+          "hat": "yellow",
+          "height": 130,
+          "id": "monkey",
+          "pose": "sit",
+          "x": 0.45,
+          "y": 0.28
+        },
+        {
+          "hat": "green",
+          "height": 190,
+          "id": "monkey",
+          "pose": "sit",
+          "x": 0.82,
+          "y": 0.26
+        },
+        {
+          "hat": "red",
+          "height": 190,
+          "id": "monkey",
+          "pose": "sit",
+          "x": 0.9,
+          "y": 0.34
+        },
+        {
+          "id": "betu",
+          "pose": "stand",
+          "x": 0.37,
+          "y": 0.76,
+          "height": 260
+        },
+        {
+          "id": "bholu",
+          "pose": "stand",
+          "x": 0.5,
+          "y": 0.76,
+          "height": 260
+        }
+      ],
+      "background": "jungle",
+      "id": "ch7",
+      "lines": [
+        "throw_ask"
+      ],
+      "linesAfter": [
+        "monkeys_copy",
+        "collect"
+      ],
+      "minigame": "copycat-catch",
+      "next": "ch8",
+      "title": {
+        "en": "Throw the Hat!",
+        "hi": "टोपी फेंको!"
+      }
+    },
+    "ch8": {
+      "actors": [
+        {
+          "height": 340,
+          "id": "topiwala",
+          "pose": "hold-hats",
+          "x": 0.35,
+          "y": 0.77
+        },
+        {
+          "hat": "picked",
+          "height": 280,
+          "id": "betu",
+          "pose": "stand",
+          "x": 0.6,
+          "y": 0.75,
+          "flip": true
+        },
+        {
+          "hat": "picked",
+          "height": 240,
+          "id": "bholu",
+          "pose": "stand",
+          "x": 0.73,
+          "y": 0.76,
+          "flip": true
+        },
+        {
+          "id": "monkey",
+          "pose": "climb",
+          "x": 0.54,
+          "y": 0.34,
+          "height": 150
+        },
+        {
+          "id": "monkey",
+          "pose": "eat",
+          "x": 0.84,
+          "y": 0.29,
+          "height": 185,
+          "flip": true
+        }
+      ],
+      "background": "jungle",
+      "id": "ch8",
+      "lines": [
+        "gift_offer",
+        "polite_refuse",
+        "first_sale"
+      ],
+      "linesAfter": [],
+      "minigame": null,
+      "next": "ch9",
+      "title": {
+        "en": "The First Sale",
+        "hi": "पहली बिक्री"
+      }
+    },
+    "ch9": {
+      "actors": [
+        {
+          "height": 340,
+          "id": "topiwala",
+          "pose": "walk",
+          "x": 0.69,
+          "y": 0.78
+        },
+        {
+          "hat": "picked",
+          "height": 280,
+          "id": "betu",
+          "pose": "wave",
+          "x": 0.2,
+          "y": 0.77,
+          "flip": true
+        },
+        {
+          "hat": "picked",
+          "height": 240,
+          "id": "bholu",
+          "pose": "wave",
+          "x": 0.33,
+          "y": 0.78,
+          "flip": true
+        },
+        {
+          "id": "monkey",
+          "pose": "wave",
+          "x": 0.56,
+          "y": 0.36,
+          "height": 155,
+          "flip": true
+        },
+        {
+          "id": "monkey",
+          "pose": "wave",
+          "x": 0.82,
+          "y": 0.26,
+          "height": 175,
+          "flip": true
+        }
+      ],
+      "background": "jungle",
+      "id": "ch9",
+      "lines": [
+        "reprise",
+        "goodbye"
+      ],
+      "linesAfter": [],
+      "minigame": null,
+      "next": null,
+      "song": "topiwala",
+      "songLines": [
+        "reprise"
+      ],
+      "title": {
+        "en": "Hats for Sale!",
+        "hi": "टोपी ले लो!"
+      }
+    }
+  },
+  "dialogue": {
+    "hi": {
+      "betu_spot": "बेटू (दूर से): देखो भोलू! टोपीवाले अंकल! चलो, हम भी टोपी खरीदते हैं!",
+      "betu_tell": "बेटू: अंकल, घबराओ मत! बंदरों ने आपकी टोपियाँ ले ली हैं। देखो, पेड़ के ऊपर!",
+      "bholu_pick": "भोलू: हाँ! तुम कौन-से रंग की टोपी लोगी, बेटू? मैं नीली लूँगा!",
+      "catch_instruction": "लाल टोपी को खींचकर ज़मीन पर फेंको! फिर गिरती हुई टोपियों को छूकर पकड़ो!",
+      "collect": "सबने मिलकर टोपियाँ उठाईं और टोपीवाले को दे दीं।",
+      "dance_button": "कूदो!",
+      "dance_instruction": "कूदो बटन दबाओ! देखो, क्या बंदर नकल करते हैं?",
+      "dream_1": "टोपीवाला सो गया और सपना देखा: खूब सारी टोपियाँ बिकेंगी! पैसे और आम लेकर घर जाऊँगा, और परिवार के साथ मज़े करूँगा।",
+      "first_sale": "टोपीवाला मुस्कुराया: तुम कितने अच्छे बच्चे हो! ये रही तुम्हारी टोपियाँ।",
+      "gift_offer": "टोपीवाला: बहुत-बहुत धन्यवाद! ये दो टोपियाँ तुम रख लो।",
+      "goodbye": "बेटू और भोलू ने हाथ हिलाकर कहा: अलविदा, टोपीवाले अंकल!",
+      "idea": "भोलू: अंकल, मेरे पास एक तरकीब है! बंदर नकलची होते हैं। वे हमारी नकल करते हैं!",
+      "monkeys_copy": "अरे वाह! बंदरों ने भी अपनी-अपनी टोपी नीचे फेंक दी!",
+      "monkeys_steal": "अरे! टोपीवाले के सोते ही बंदर पेड़ से नीचे आए! हर बंदर ने एक-एक टोपी ली और पेड़ के ऊपर जा बैठा!",
+      "picker_done": "हो गया! ✓",
+      "picker_title": "बेटू और भोलू के लिए टोपी चुनो!",
+      "polite_refuse": "बेटू: नहीं अंकल, धन्यवाद! हम टोपियाँ खरीदना चाहते हैं। आपकी पहली बिक्री हमसे हो!",
+      "reprise": "टोपीवाला गाते हुए आगे बढ़ा: टोपी ले लो! लाल-पीली टोपी ले लो, हरी-नीली टोपी ले लो!",
+      "rest_think": "टोपीवाला सोचता है: यहीं थोड़ी देर आराम कर लेता हूँ। आम खाऊँगा, पानी पीऊँगा, हाथ-पैर दबाऊँगा, फिर छोटी-सी झपकी लूँगा।",
+      "shade": "पेड़ के नीचे कितनी ठंडी छाँव है, और कितनी सुहानी हवा चल रही है!",
+      "test_plan": "बेटू: चलो पहले कूदकर और नाचकर देखते हैं कि वे नकल करते हैं या नहीं!",
+      "throw_ask": "बेटू: अंकल, अब अपनी टोपी ज़मीन पर फेंक दो!",
+      "topi_song_1": "टोपीवाला गाता है: टोपी ले लो! टोपी ले लो!",
+      "topi_song_2": "लाल-पीली टोपी ले लो, हरी-नीली टोपी ले लो!",
+      "tree_spot": "अरे! कितना बड़ा आम का पेड़ है! और ऊपर कितने सारे बंदर!",
+      "validated": "देखो! बंदर भी कूद रहे हैं! तरकीब काम करेगी!",
+      "wake": "टोपीवाला जागा: अरे! मेरी टोपियाँ कहाँ गईं?",
+      "worry": "टोपियों के बिना मैं पैसे कैसे कमाऊँगा? घर कैसे जाऊँगा?",
+      "title_main": "बेतू और भोलू के कारनामे",
+      "title_sub": "टोपीवाला और बंदर",
+      "title_start": "शुरू करें",
+      "end_title": "कहानी समाप्त।",
+      "end_again": "फिर से पढ़ें",
+      "end_home": "मुखपृष्ठ"
+    },
+    "en": {
+      "betu_spot": "Betu (from afar): Look Bholu! The hat-seller uncle! Let's buy hats too!",
+      "betu_tell": "Betu: Uncle, don't worry! The monkeys took your hats. Look, on top of the tree!",
+      "bholu_pick": "Bholu: Yes! Which color hat will you take, Betu? I'll take the blue one!",
+      "catch_instruction": "Drag the red hat down to the ground! Then tap the falling hats to catch them!",
+      "collect": "Everyone collected the hats together and gave them to the hat seller.",
+      "dance_button": "Jump!",
+      "dance_instruction": "Press the Jump button! Watch, do the monkeys copy us?",
+      "dream_1": "The hat seller fell asleep and dreamed: I'll sell lots of hats! I'll take money and mangoes home, and have fun with my family.",
+      "first_sale": "The hat seller smiled: You are such kind children! Here are your hats.",
+      "gift_offer": "Hat seller: Thank you so much! Keep these two hats.",
+      "goodbye": "Betu and Bholu waved: Goodbye, hat-seller uncle!",
+      "idea": "Bholu: Uncle, I have an idea! Monkeys are copycats. They imitate us!",
+      "monkeys_copy": "Wow! The monkeys threw their hats down too!",
+      "monkeys_steal": "Oh no! As soon as the hat seller fell asleep, the monkeys came down the tree! Each monkey took one hat and sat on top of the tree!",
+      "picker_done": "Done! ✓",
+      "picker_title": "Choose hats for Betu and Bholu!",
+      "polite_refuse": "Betu: No thank you, uncle! We want to buy the hats. Let your first sale be to us!",
+      "reprise": "The hat seller walked on, singing: Hats for sale! Red-yellow hats for sale, green-blue hats for sale!",
+      "rest_think": "The hat seller thinks: I'll rest here a while. I'll eat mangoes, drink water, rest my hands and feet, then take a short nap.",
+      "shade": "What cool shade under the tree, and what a lovely breeze is blowing!",
+      "test_plan": "Betu: First let's jump and dance and see whether they copy us!",
+      "throw_ask": "Betu: Uncle, now throw your hat on the ground!",
+      "topi_song_1": "The hat seller sings: Hats for sale! Hats for sale!",
+      "topi_song_2": "Red-yellow hats for sale, green-blue hats for sale!",
+      "tree_spot": "Oh! What a big mango tree! And so many monkeys on top!",
+      "validated": "Look! The monkeys are jumping too! The trick will work!",
+      "wake": "The hat seller woke up: Oh! Where did my hats go?",
+      "worry": "Without my hats, how will I earn money? How will I go home?",
+      "title_main": "Adventures of Betu and Bholu",
+      "title_sub": "Hatseller and the Monkeys",
+      "title_start": "Start",
+      "end_title": "End of the story.",
+      "end_again": "Read again",
+      "end_home": "Title page"
+    }
+  },
+  "end": {
+    "hi": {
+      "title": "कहानी समाप्त।",
+      "credits": []
+    },
+    "en": {
+      "title": "End of the story.",
+      "credits": []
+    }
+  }
+}
