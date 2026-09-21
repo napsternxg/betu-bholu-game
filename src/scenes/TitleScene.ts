@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { dialogue } from '../core/DialogueSystem';
 import { save } from '../core/SaveManager';
 import { audio } from '../core/AudioManager';
+import { storyData } from '../core/StoryData';
 import { Character } from '../core/Character';
 import { bindShortcuts } from '../core/Shortcuts';
 
@@ -52,10 +53,13 @@ export class TitleScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    // Betu & Bholu flanking the title
-    new Character(this, 'betu', 'stand', width / 2 - 560, 660, 300);
-    const bholu = new Character(this, 'bholu', 'stand', width / 2 + 560, 660, 300);
-    bholu.container.setScale(-1, 1); // face inward toward Betu
+    // Betu & Bholu flanking the title — positions come from the story data
+    // (content/title.json), editable on the editor's title page. Same
+    // fraction-to-pixel mapping as story chapters.
+    for (const a of storyData.getTitleActors()) {
+      const ch = new Character(this, a.id, a.pose, a.x * width, a.y * height, a.height ?? 300);
+      if (a.flip) ch.container.setScale(-1, 1);
+    }
 
     // Big start button
     const btn = this.add.container(width / 2, 640);

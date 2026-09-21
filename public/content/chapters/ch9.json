@@ -3,39 +3,45 @@
     {
       "height": 340,
       "id": "topiwala",
-      "pose": "walk",
-      "x": 0.5,
-      "y": 0.7
+      "pose": "wave",
+      "x": 0.6616635467646993,
+      "y": 0.8331793687451886
     },
     {
+      "flip": true,
       "hat": "picked",
       "height": 280,
       "id": "betu",
       "pose": "wave",
-      "x": 0.28,
-      "y": 0.72
+      "x": 0.20879105678221585,
+      "y": 0.7877444187836798
     },
     {
+      "flip": true,
       "hat": "picked",
       "height": 240,
       "id": "bholu",
       "pose": "wave",
-      "x": 0.72,
-      "y": 0.74
+      "x": 0.3581815858123397,
+      "y": 0.7969668976135489
     },
     {
-      "height": 180,
+      "flip": true,
+      "hat": null,
+      "height": 140,
       "id": "monkey",
-      "pose": "sit",
-      "x": 0.84,
-      "y": 0.26
+      "pose": "wave",
+      "x": 0.583237480923491,
+      "y": 0.3859892224788299
     },
     {
-      "height": 180,
+      "flip": true,
+      "hat": null,
+      "height": 160,
       "id": "monkey",
-      "pose": "sit",
-      "x": 0.92,
-      "y": 0.36
+      "pose": "wave",
+      "x": 0.8820263575332475,
+      "y": 0.3675134719014626
     }
   ],
   "background": "jungle",

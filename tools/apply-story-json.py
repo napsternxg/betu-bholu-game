@@ -4,6 +4,7 @@ The in-game editor (title page > Edit) exports a full story snapshot:
   { "app": "betu-bholu-story", "version": 1, "exportedAt": ...,
     "dialogue": { "hi": {...}, "en": {...} },
     "chapters": [ {ch1}, {ch2}, ..., {ch9} ],
+    "title": { "actors": [...] },
     "hatTuning": { "betu:wave": {"ox":..., "oy":..., "w":...}, ... } }
 
 When the user pastes that JSON in chat, save it to a file (e.g. /tmp/story.json)
@@ -15,6 +16,7 @@ It validates the snapshot and overwrites:
   public/content/dialogue/hi.json
   public/content/dialogue/en.json
   public/content/chapters/ch1.json ... ch9.json
+  public/content/title.json             (only when the snapshot has a title section)
   public/content/hats.json            (only the tuned anchors, merged)
 
 Then rebuild (`npm run build`) and redeploy so the edited story becomes the
@@ -51,6 +53,20 @@ def main() -> None:
         p = CONTENT / 'chapters' / f'{c["id"]}.json'
         p.write_text(json.dumps(c, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
         print(f'wrote {p.relative_to(ROOT)}')
+
+    # Title-page characters (the cover's Betu & Bholu), editable in the editor.
+    # Snapshots without a title section (e.g. older exports) keep the
+    # existing public/content/title.json untouched.
+    title = snap.get('title')
+    if isinstance(title, dict) and isinstance(title.get('actors'), list) and title['actors']:
+        for a in title['actors']:
+            assert isinstance(a.get('id'), str) and isinstance(a.get('pose'), str), f'bad title actor: {a}'
+            assert 0 <= a.get('x', -1) <= 1 and 0 <= a.get('y', -1) <= 1, f'title actor out of frame: {a}'
+        tp = CONTENT / 'title.json'
+        tp.write_text(json.dumps({'actors': title['actors']}, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+        print(f'wrote {tp.relative_to(ROOT)}')
+    else:
+        print('no title section — kept existing public/content/title.json')
 
     # Bake parent-tuned hat anchors (editor 🎩 nudge buttons) into hats.json.
     tuning = snap.get('hatTuning') or {}

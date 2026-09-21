@@ -5,7 +5,7 @@ import { save } from '../core/SaveManager';
 import { Character } from '../core/Character';
 import { HatSystem } from '../core/HatSystem';
 import { hatTuning } from '../core/HatTuning';
-import { POSES, BACKGROUNDS, type ChapterJSON, type HatColor } from '../core/types';
+import { POSES, BACKGROUNDS, type ChapterJSON, type ActorRef, type HatColor } from '../core/types';
 import { bindShortcuts } from '../core/Shortcuts';
 
 const FONT = '"Baloo 2", sans-serif';
@@ -167,6 +167,7 @@ export class EditorScene extends Phaser.Scene {
     for (const { c } of this.chars) c.destroy();
     this.chars = [];
     this.dragInfo.clear();
+
     this.chapter.actors.forEach((a, i) => this.buildActor(a, i));
   }
 
@@ -182,6 +183,10 @@ export class EditorScene extends Phaser.Scene {
     for (const { c } of this.chars) c.destroy();
     this.chars = [];
     this.dragInfo.clear();
+
+    // The title page's characters (Betu & Bholu) — draggable and editable
+    // exactly like chapter actors, so the cover layout can be tuned here.
+    storyData.getTitleActors().forEach((a, i) => this.buildActor(a, i));
 
     // Mirrors TitleScene's layout, shifted down so the toolbar strip stays clear.
     const panel = this.add.rectangle(width / 2, 240, 920, 300, 0x000000, 0.55).setDepth(5);
@@ -255,6 +260,12 @@ export class EditorScene extends Phaser.Scene {
     return this.isTitle ? this.titleLines : [...this.chapter.lines, ...this.chapter.linesAfter];
   }
 
+  /** The actor list for the current page: the title page's characters
+   *  (Betu & Bholu) on page 0, the chapter's actors everywhere else. */
+  private currentActors(): ActorRef[] {
+    return this.isTitle ? storyData.getTitleActors() : this.chapter.actors;
+  }
+
   private gotoChapter(d: number): void {
     const n = this.chapterIdx + d;
     if (n < 0 || n >= this.pageIds.length) return;
@@ -321,7 +332,7 @@ export class EditorScene extends Phaser.Scene {
   private showPanel(): void {
     this.hidePanel();
     const { width } = this.scale;
-    const a = this.chapter.actors[this.selected];
+    const a = this.currentActors()[this.selected];
     this.panel = this.add.container(width / 2, 178).setDepth(25);
     this.panel.add(this.add.rectangle(0, 0, 1170, 164, 0x000000, 0.8).setStrokeStyle(2, 0xffca3a));
 
@@ -383,7 +394,7 @@ export class EditorScene extends Phaser.Scene {
   }
 
   private mutateActor(fn: (a: ChapterJSON['actors'][number]) => void): void {
-    const a = this.chapter.actors[this.selected];
+    const a = this.currentActors()[this.selected];
     if (!a) return;
     fn(a);
     storyData.touch();
@@ -393,10 +404,10 @@ export class EditorScene extends Phaser.Scene {
 
   /** Rebuild the selected actor's sprite (picks up hat/anchor changes) and refresh the panel. */
   private rebuildSelected(): void {
-    if (this.selected < 0 || !this.chapter.actors[this.selected]) return;
+    if (this.selected < 0 || !this.currentActors()[this.selected]) return;
     const { c } = this.chars[this.selected];
     c.destroy();
-    this.buildActor(this.chapter.actors[this.selected], this.selected);
+    this.buildActor(this.currentActors()[this.selected], this.selected);
     this.select(this.selected);
   }
 
@@ -426,7 +437,7 @@ export class EditorScene extends Phaser.Scene {
 
   /** Nudge this character+pose's hat anchor; persists to localStorage immediately. */
   private nudgeHat(dox: number, doy: number): void {
-    const a = this.chapter.actors[this.selected];
+    const a = this.currentActors()[this.selected];
     if (!a) return;
     const cur = HatSystem.anchorFor(this, a.id, a.pose);
     hatTuning.set(a.id, a.pose, {
@@ -440,7 +451,7 @@ export class EditorScene extends Phaser.Scene {
 
   /** Drop the override and fall back to the shipped hats.json anchor. */
   private resetHatAnchor(): void {
-    const a = this.chapter.actors[this.selected];
+    const a = this.currentActors()[this.selected];
     if (!a) return;
     hatTuning.remove(a.id, a.pose);
     this.rebuildSelected();
@@ -456,20 +467,20 @@ export class EditorScene extends Phaser.Scene {
 
   /** Append a new character to this page at center stage and select it. */
   private addActor(): void {
-    if (this.isTitle) return;
-    this.chapter.actors.push({ id: 'betu', pose: POSES['betu'][0], x: 0.5, y: 0.6, height: 240 });
+    const actors = this.currentActors();
+    actors.push({ id: 'betu', pose: POSES['betu'][0], x: 0.5, y: 0.6, height: 240 });
     storyData.touch();
-    const i = this.chapter.actors.length - 1;
-    this.buildActor(this.chapter.actors[i], i);
+    const i = actors.length - 1;
+    this.buildActor(this.currentActors()[i], i);
     this.select(i);
     this.toast('Saved ✓');
   }
 
   /** Remove the selected character from this page (with confirmation). */
   private removeActor(): void {
-    if (this.isTitle || this.selected < 0) return;
+    if (this.selected < 0) return;
     if (!window.confirm('Remove this character from the page?')) return;
-    this.chapter.actors.splice(this.selected, 1);
+    this.currentActors().splice(this.selected, 1);
     storyData.touch();
     this.renderPage();
     this.toast('Saved ✓');
@@ -536,7 +547,7 @@ export class EditorScene extends Phaser.Scene {
         this.select(info.idx);
         return;
       }
-      const a = this.chapter.actors[info.idx];
+      const a = this.currentActors()[info.idx];
       const h = this.chars[info.idx]?.h ?? 300;
       a.x = Math.min(1, Math.max(0, gameObject.x / width));
       a.y = Math.min(1, Math.max(0, (gameObject.y + h / 2) / height)); // feet position
@@ -551,8 +562,8 @@ export class EditorScene extends Phaser.Scene {
    *  height is persisted, so the next render builds the sprite at that size. */
   private wireWheel(): void {
     this.input.on('wheel', (_p: Phaser.Input.Pointer, _objs: unknown, _dx: number, dy: number) => {
-      if (this.isTitle || this.selected < 0 || !this.chars[this.selected]) return;
-      const a = this.chapter.actors[this.selected];
+      if (this.selected < 0 || !this.chars[this.selected]) return;
+      const a = this.currentActors()[this.selected];
       const { c } = this.chars[this.selected];
       const oldH = this.chars[this.selected].h || 300;
       const nh = Math.min(1200, Math.max(40, Math.round((a.height ?? 300) - dy * 0.25)));

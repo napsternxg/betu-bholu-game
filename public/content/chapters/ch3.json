@@ -1,11 +1,12 @@
 {
   "actors": [
     {
-      "height": 340,
+      "flip": true,
+      "height": 140,
       "id": "topiwala",
       "pose": "sleep",
-      "x": 0.5,
-      "y": 0.74
+      "x": 0.7838734898546802,
+      "y": 0.6660969976905312
     }
   ],
   "background": "yard",

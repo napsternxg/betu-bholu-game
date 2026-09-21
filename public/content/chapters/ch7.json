@@ -4,77 +4,55 @@
       "height": 340,
       "id": "topiwala",
       "pose": "stand",
-      "x": 0.22,
-      "y": 0.72
+      "x": 0.24020794334558743,
+      "y": 0.803910700538876
     },
     {
       "hat": "blue",
-      "height": 190,
+      "height": 150,
       "id": "monkey",
       "pose": "sit",
-      "x": 0.52,
-      "y": 0.44
+      "x": 0.5657084432816858,
+      "y": 0.39073133179368746
     },
     {
       "hat": "yellow",
-      "height": 190,
+      "height": 130,
       "id": "monkey",
       "pose": "sit",
-      "x": 0.7,
-      "y": 0.3
+      "x": 0.41756993467000464,
+      "y": 0.24611239414934563
     },
     {
       "hat": "green",
       "height": 190,
       "id": "monkey",
       "pose": "sit",
-      "x": 0.79,
-      "y": 0.3
+      "x": 0.8010662546892503,
+      "y": 0.2314857582755966
     },
     {
       "hat": "red",
       "height": 190,
       "id": "monkey",
       "pose": "sit",
-      "x": 0.9,
-      "y": 0.4
-    }
-  ],
-  "actorsAfter": [
+      "x": 0.9110662546892504,
+      "y": 0.3707467282525019
+    },
     {
-      "height": 340,
-      "id": "topiwala",
+      "height": 240,
+      "id": "betu",
       "pose": "stand",
-      "x": 0.22,
-      "y": 0.72
+      "x": 0.3590255380891164,
+      "y": 0.8224788298691301
     },
     {
-      "height": 190,
-      "id": "monkey",
-      "pose": "sit",
-      "x": 0.52,
-      "y": 0.44
-    },
-    {
-      "height": 190,
-      "id": "monkey",
-      "pose": "sit",
-      "x": 0.7,
-      "y": 0.3
-    },
-    {
-      "height": 190,
-      "id": "monkey",
-      "pose": "sit",
-      "x": 0.79,
-      "y": 0.3
-    },
-    {
-      "height": 190,
-      "id": "monkey",
-      "pose": "sit",
-      "x": 0.9,
-      "y": 0.4
+      "hat": null,
+      "height": 180,
+      "id": "bholu",
+      "pose": "stand",
+      "x": 0.4403384529796943,
+      "y": 0.8193995381062357
     }
   ],
   "background": "jungle",

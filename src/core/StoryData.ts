@@ -1,9 +1,10 @@
-import type { ChapterJSON, Lang } from './types';
+import type { ChapterJSON, ActorRef, Lang } from './types';
 import { hatTuning, type HatTuningMap } from './HatTuning';
 
 // The whole story is data: dialogue strings + one JSON object per chapter.
-// Shipped defaults come from content/dialogue/*.json and
-// content/chapters/*.json. The in-game editor mutates this in-memory copy
+// Shipped defaults come from content/dialogue/*.json,
+// content/chapters/*.json, and content/title.json (the cover page's actors).
+// The in-game editor mutates this in-memory copy
 // and persists a full snapshot to localStorage, so edits survive reloads.
 // Exporting the snapshot gives the user a JSON blob they can paste back in
 // chat; tools/apply-story-json.py then bakes it in as the new default.
@@ -11,12 +12,21 @@ import { hatTuning, type HatTuningMap } from './HatTuning';
 const LS_KEY = 'betu-bholu-story-v1';
 const ORDER = ['ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch7', 'ch8', 'ch9'];
 
+// Fallback cover actors if content/title.json is ever missing: Betu & Bholu
+// flanking the title, set slightly inside the frame so they never crop.
+const DEFAULT_TITLE_ACTORS: ActorRef[] = [
+  { id: 'betu', pose: 'stand', x: 0.11, y: 0.825, height: 300 },
+  { id: 'bholu', pose: 'stand', x: 0.89, y: 0.825, height: 300, flip: true },
+];
+
 export interface StorySnapshot {
   app: 'betu-bholu-story';
   version: 1;
   exportedAt: string;
   dialogue: Record<Lang, Record<string, string>>;
   chapters: ChapterJSON[];
+  /** The title page's characters (Betu & Bholu), editable in the editor. */
+  title: { actors: ActorRef[] };
   /** Editor-tuned hat anchors, baked into content/hats.json by apply-story-json.py. */
   hatTuning: HatTuningMap;
 }
@@ -27,6 +37,7 @@ class StoryData {
   readonly order = ORDER;
   private dialogue: Record<Lang, Record<string, string>> = { hi: {}, en: {} };
   private chapters = new Map<string, ChapterJSON>();
+  private titleActors: ActorRef[] = deepCopy(DEFAULT_TITLE_ACTORS);
   private hasOverrides = false;
 
   /** Load shipped JSON, then overlay any saved editor snapshot. */
@@ -45,6 +56,16 @@ class StoryData {
       ORDER.map((id) => fetch(`content/chapters/${id}.json`).then((r) => r.json())),
     )) as ChapterJSON[];
     this.chapters = new Map(list.map((c) => [c.id, c]));
+    try {
+      const title = (await fetch('content/title.json').then((r) => r.json())) as {
+        actors?: ActorRef[];
+      };
+      if (Array.isArray(title.actors) && title.actors.length > 0) {
+        this.titleActors = title.actors;
+      }
+    } catch {
+      // Missing title.json — keep the built-in default cover actors.
+    }
     this.hasOverrides = false;
   }
 
@@ -58,6 +79,9 @@ class StoryData {
       }
       this.dialogue = snap.dialogue;
       this.chapters = new Map(snap.chapters.map((c) => [c.id, c]));
+      if (Array.isArray(snap.title?.actors) && snap.title.actors.length > 0) {
+        this.titleActors = snap.title.actors;
+      }
       if (snap.hatTuning && Object.keys(snap.hatTuning).length > 0) {
         hatTuning.importAll(snap.hatTuning);
       }
@@ -81,6 +105,12 @@ class StoryData {
     return c;
   }
 
+  /** The title page's characters (Betu & Bholu). The editor mutates this
+   *  array in place and persists via touch(). */
+  getTitleActors(): ActorRef[] {
+    return this.titleActors;
+  }
+
   /** Editor: change one dialogue line, then persist. */
   setLine(lang: Lang, id: string, text: string): void {
     this.dialogue[lang][id] = text;
@@ -99,6 +129,7 @@ class StoryData {
       exportedAt: new Date().toISOString(),
       dialogue: deepCopy(this.dialogue),
       chapters: this.order.map((id) => deepCopy(this.getChapter(id))),
+      title: { actors: deepCopy(this.titleActors) },
       hatTuning: hatTuning.export(),
     };
   }
