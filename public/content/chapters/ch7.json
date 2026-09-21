@@ -40,21 +40,6 @@
       "y": 0.4
     }
   ],
-  "background": "jungle",
-  "id": "ch7",
-  "lines": [
-    "throw_ask"
-  ],
-  "linesAfter": [
-    "monkeys_copy",
-    "collect"
-  ],
-  "minigame": "copycat-catch",
-  "next": "ch8",
-  "title": {
-    "en": "Throw the Hat!",
-    "hi": "टोपी फेंको!"
-  },
   "actorsAfter": [
     {
       "height": 340,
@@ -91,5 +76,20 @@
       "x": 0.9,
       "y": 0.4
     }
-  ]
+  ],
+  "background": "jungle",
+  "id": "ch7",
+  "lines": [
+    "throw_ask"
+  ],
+  "linesAfter": [
+    "monkeys_copy",
+    "collect"
+  ],
+  "minigame": "copycat-catch",
+  "next": "ch8",
+  "title": {
+    "en": "Throw the Hat!",
+    "hi": "टोपी फेंको!"
+  }
 }

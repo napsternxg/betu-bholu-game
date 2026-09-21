@@ -1,28 +1,31 @@
 {
   "actors": [
     {
+      "flip": true,
       "height": 280,
       "id": "betu",
       "pose": "stand",
-      "x": 0.28,
-      "y": 0.72
+      "x": 0.6981119706503681,
+      "y": 0.7646497305619707
     },
     {
+      "flip": true,
       "height": 240,
       "id": "bholu",
       "pose": "stand",
-      "x": 0.42,
-      "y": 0.74
+      "x": 0.8231965838952918,
+      "y": 0.7877290223248653
     },
     {
-      "height": 320,
+      "flip": true,
+      "height": 140,
       "id": "topiwala",
       "pose": "sleep",
-      "x": 0.62,
-      "y": 0.76
+      "x": 0.25866272732056794,
+      "y": 0.6298999230177059
     }
   ],
-  "background": "village",
+  "background": "field",
   "id": "ch4",
   "lines": [
     "betu_spot",

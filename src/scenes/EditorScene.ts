@@ -18,6 +18,15 @@ const CHAR_IDS = ['betu', 'bholu', 'topiwala', 'monkey'];
 // full story snapshot to copy-paste back in chat, where it can be baked in
 // as the new permanent default (tools/apply-story-json.py).
 export class EditorScene extends Phaser.Scene {
+  private pageIds: string[] = [];
+  private isTitle = false;
+  private titleLines = ['title_main', 'title_sub', 'title_start', 'end_title', 'end_replay', 'end_credits'];
+  private titleObjs: Phaser.GameObjects.GameObject[] = [];
+  private titleMainText: Phaser.GameObjects.Text | null = null;
+  private titleSubText: Phaser.GameObjects.Text | null = null;
+  private titleStartText: Phaser.GameObjects.Text | null = null;
+  private lastWheelSave = 0;
+
   private chapterIdx = 0;
   private lineIdx = 0;
   private selected = -1;
@@ -41,14 +50,16 @@ export class EditorScene extends Phaser.Scene {
 
   create(): void {
     dialogue.lang = save.getLang();
+    // Page 0 is the title page, then the nine story chapters in order.
+    this.pageIds = ['title', ...storyData.order];
     this.chapterIdx = 0;
     this.lineIdx = 0;
     this.selected = -1;
-    this.chapter = storyData.getChapter(storyData.order[0]);
 
     this.buildToolbar();
-    this.renderChapter();
+    this.renderPage();
     this.wireDrag();
+    this.wireWheel();
     if (storyData.usingOverrides) this.toast('Loaded your saved edits');
 
     // Esc exits to the title page (same as ✕ Done), ? shows shortcut help.
@@ -89,12 +100,13 @@ export class EditorScene extends Phaser.Scene {
     const { width } = this.scale;
     const strip = this.add.rectangle(0, 0, width, 112, 0x000000, 0.72).setOrigin(0, 0).setDepth(30);
 
-    // Chapter navigation
-    this.btn(16, 10, '◀', () => this.gotoChapter(this.chapterIdx - 1));
+    // Chapter navigation (gotoChapter takes a delta, not an index —
+    // passing chapterIdx+1 here used to skip chapters 3, 5, 6, 7 and strand ch9).
+    this.btn(16, 10, '◀', () => this.gotoChapter(-1));
     this.chLabel = this.add
       .text(76, 14, '', { fontFamily: FONT, fontSize: '22px', color: '#ffca3a', backgroundColor: '#000000aa', padding: { x: 10, y: 8 } })
       .setDepth(30);
-    this.btn(170, 10, '▶', () => this.gotoChapter(this.chapterIdx + 1));
+    this.btn(170, 10, '▶', () => this.gotoChapter(1));
     this.bgBtn = this.btn(250, 10, '', () => this.cycleBackground());
 
     // Right side: save / export / reset / exit
@@ -106,12 +118,12 @@ export class EditorScene extends Phaser.Scene {
       this.toast('All edits saved in this browser ✓');
     }, true);
 
-    // Line navigation
-    this.btn(16, 60, '◀', () => this.gotoLine(this.lineIdx - 1));
+    // Line navigation (deltas, for the same reason as chapters).
+    this.btn(16, 60, '◀', () => this.gotoLine(-1));
     this.lineLabel = this.add
       .text(76, 64, '', { fontFamily: FONT, fontSize: '20px', color: '#fff8e7', backgroundColor: '#000000aa', padding: { x: 10, y: 8 } })
       .setDepth(30);
-    this.btn(430, 60, '▶', () => this.gotoLine(this.lineIdx + 1));
+    this.btn(430, 60, '▶', () => this.gotoLine(1));
     this.add
       .text(510, 70, 'Drag characters · tap one to edit · tap the text to change it', {
         fontFamily: FONT, fontSize: '18px', color: '#fff8e7', backgroundColor: '#00000088', padding: { x: 10, y: 6 },
@@ -120,8 +132,29 @@ export class EditorScene extends Phaser.Scene {
     strip.setDepth(29);
   }
 
-  // ---------- chapter rendering ----------
-  private renderChapter(): void {
+  // ---------- page rendering ----------
+  /** Render the current editor page: the title page (page 0) or a story chapter. */
+  private renderPage(): void {
+    for (const o of this.titleObjs) o.destroy();
+    this.titleObjs = [];
+    this.titleMainText = this.titleSubText = this.titleStartText = null;
+
+    this.isTitle = this.pageIds[this.chapterIdx] === 'title';
+    if (this.isTitle) this.renderTitlePage();
+    else {
+      this.chapter = storyData.getChapter(this.pageIds[this.chapterIdx]);
+      this.renderStoryChapter();
+    }
+
+    this.selected = -1;
+    this.updateRing();
+    this.hidePanel();
+    this.lineIdx = 0;
+    this.renderLine();
+    this.refreshLabels();
+  }
+
+  private renderStoryChapter(): void {
     const { width, height } = this.scale;
     // background
     this.bgImg?.destroy();
@@ -135,13 +168,54 @@ export class EditorScene extends Phaser.Scene {
     this.chars = [];
     this.dragInfo.clear();
     this.chapter.actors.forEach((a, i) => this.buildActor(a, i));
+  }
 
-    this.selected = -1;
-    this.updateRing();
-    this.hidePanel();
-    this.lineIdx = 0;
-    this.renderLine();
-    this.refreshLabels();
+  /** Title-page editing view: a live preview of the real cover; tap any line to edit its text. */
+  private renderTitlePage(): void {
+    const { width, height } = this.scale;
+    this.bgImg?.destroy();
+    this.bgImg = this.add.image(width / 2, height / 2, 'bg-jungle');
+    this.bgImg.setDisplaySize(width, height).setDepth(-10);
+    this.bgImg.setInteractive({ useHandCursor: true });
+    this.bgImg.on('pointerdown', () => this.select(-1));
+
+    for (const { c } of this.chars) c.destroy();
+    this.chars = [];
+    this.dragInfo.clear();
+
+    // Mirrors TitleScene's layout, shifted down so the toolbar strip stays clear.
+    const panel = this.add.rectangle(width / 2, 240, 920, 300, 0x000000, 0.55).setDepth(5);
+    panel.setStrokeStyle(4, 0xfff3d6, 0.9);
+    this.titleObjs.push(panel);
+    const mk = (y: number, size: string, color: string, id: string): Phaser.GameObjects.Text => {
+      const t = this.add
+        .text(width / 2, y, '', {
+          fontFamily: FONT, fontSize: size, color, align: 'center',
+          wordWrap: { width: 860 },
+        })
+        .setOrigin(0.5)
+        .setDepth(6)
+        .setInteractive({ useHandCursor: true });
+      t.on('pointerdown', (_p: Phaser.Input.Pointer, _x: number, _y: number, event: Phaser.Types.Input.EventData) => {
+        event.stopPropagation();
+        this.openTextModal(id);
+      });
+      this.titleObjs.push(t);
+      return t;
+    };
+    this.titleMainText = mk(165, '62px', '#fff8e7', 'title_main');
+    this.titleSubText = mk(295, '44px', '#ffca3a', 'title_sub');
+    const startBg = this.add.rectangle(width / 2, 600, 420, 110, 0xffb703).setDepth(5);
+    startBg.setStrokeStyle(5, 0x8b5a2b);
+    this.titleObjs.push(startBg);
+    this.titleStartText = mk(598, '48px', '#4a2c00', 'title_start');
+    this.renderTitlePreview();
+  }
+
+  private renderTitlePreview(): void {
+    this.titleMainText?.setText(dialogue.line('title_main'));
+    this.titleSubText?.setText(dialogue.line('title_sub'));
+    this.titleStartText?.setText(dialogue.line('title_start'));
   }
 
   private buildActor(a: ChapterJSON['actors'][number], i: number): void {
@@ -170,23 +244,22 @@ export class EditorScene extends Phaser.Scene {
   }
 
   private refreshLabels(): void {
-    this.chLabel.setText(`${this.chapterIdx + 1}/${storyData.order.length}`);
-    this.bgBtn.setText(`BG: ${this.chapter.background}`);
+    this.chLabel.setText(this.isTitle ? 'Title' : `${this.chapterIdx}/${storyData.order.length}`);
+    this.bgBtn.setText(this.isTitle ? 'BG: —' : `BG: ${this.chapter.background}`);
     const lines = this.allLines();
     const id = lines[this.lineIdx];
     this.lineLabel.setText(`Ln ${this.lineIdx + 1}/${lines.length} · ${id}`);
   }
 
   private allLines(): string[] {
-    return [...this.chapter.lines, ...this.chapter.linesAfter];
+    return this.isTitle ? this.titleLines : [...this.chapter.lines, ...this.chapter.linesAfter];
   }
 
   private gotoChapter(d: number): void {
     const n = this.chapterIdx + d;
-    if (n < 0 || n >= storyData.order.length) return;
+    if (n < 0 || n >= this.pageIds.length) return;
     this.chapterIdx = n;
-    this.chapter = storyData.getChapter(storyData.order[n]);
-    this.renderChapter();
+    this.renderPage();
   }
 
   private gotoLine(d: number): void {
@@ -282,8 +355,9 @@ export class EditorScene extends Phaser.Scene {
       [`👤 ${a.id} ▸`, () => this.cycleChar()],
       [`🎭 ${a.pose} ▸`, () => this.cyclePose()],
       [`🎩 ${a.hat ?? 'none'} ▸`, () => this.cycleHat()],
-      ['A− smaller', () => this.resize(-40)],
-      ['A+ bigger', () => this.resize(40)],
+      [`📏 ${a.height ?? 300}px`, null],
+      ['A−', () => this.resize(-20)],
+      ['A+', () => this.resize(20)],
       [a.flip ? '⇄ unflip' : '⇄ flip', () => this.toggleFlip()],
       ['✕', () => this.select(-1)],
     ]);
@@ -298,6 +372,8 @@ export class EditorScene extends Phaser.Scene {
       ['↑', () => this.nudgeHat(0, -0.02)],
       ['↓', () => this.nudgeHat(0, 0.02)],
       ['⟲ reset', () => this.resetHatAnchor()],
+      ['➕ add', () => this.addActor()],
+      ['🗑 remove', () => this.removeActor()],
     ]);
   }
 
@@ -373,8 +449,30 @@ export class EditorScene extends Phaser.Scene {
 
   private resize(d: number): void {
     this.mutateActor((a) => {
-      a.height = Math.min(560, Math.max(140, (a.height ?? 300) + d));
+      // Wide limits with fine steps; the mouse wheel gives pixel-smooth control.
+      a.height = Math.min(1200, Math.max(40, (a.height ?? 300) + d));
     });
+  }
+
+  /** Append a new character to this page at center stage and select it. */
+  private addActor(): void {
+    if (this.isTitle) return;
+    this.chapter.actors.push({ id: 'betu', pose: POSES['betu'][0], x: 0.5, y: 0.6, height: 240 });
+    storyData.touch();
+    const i = this.chapter.actors.length - 1;
+    this.buildActor(this.chapter.actors[i], i);
+    this.select(i);
+    this.toast('Saved ✓');
+  }
+
+  /** Remove the selected character from this page (with confirmation). */
+  private removeActor(): void {
+    if (this.isTitle || this.selected < 0) return;
+    if (!window.confirm('Remove this character from the page?')) return;
+    this.chapter.actors.splice(this.selected, 1);
+    storyData.touch();
+    this.renderPage();
+    this.toast('Saved ✓');
   }
 
   private toggleFlip(): void {
@@ -384,6 +482,10 @@ export class EditorScene extends Phaser.Scene {
   }
 
   private cycleBackground(): void {
+    if (this.isTitle) {
+      this.toast('The title page background is fixed');
+      return;
+    }
     const keys = Object.keys(BACKGROUNDS);
     this.chapter.background = keys[(keys.indexOf(this.chapter.background) + 1) % keys.length];
     storyData.touch();
@@ -444,6 +546,32 @@ export class EditorScene extends Phaser.Scene {
     });
   }
 
+  /** Mouse wheel over the selected character resizes it smoothly (fine control).
+   *  The container is scaled live (exact — the layout scales uniformly); the new
+   *  height is persisted, so the next render builds the sprite at that size. */
+  private wireWheel(): void {
+    this.input.on('wheel', (_p: Phaser.Input.Pointer, _objs: unknown, _dx: number, dy: number) => {
+      if (this.isTitle || this.selected < 0 || !this.chars[this.selected]) return;
+      const a = this.chapter.actors[this.selected];
+      const { c } = this.chars[this.selected];
+      const oldH = this.chars[this.selected].h || 300;
+      const nh = Math.min(1200, Math.max(40, Math.round((a.height ?? 300) - dy * 0.25)));
+      if (nh === (a.height ?? 300)) return;
+      a.height = nh;
+      const m = nh / oldH;
+      c.container.setScale(c.container.scaleX * m, c.container.scaleY * m);
+      this.chars[this.selected].h = nh;
+      this.updateRing();
+      // Persist throttled: wheel fires dozens of events per second.
+      const now = Date.now();
+      if (now - this.lastWheelSave > 250) {
+        this.lastWheelSave = now;
+        storyData.touch();
+        this.showPanel(); // refresh the 📏 readout
+      }
+    });
+  }
+
   private modalShell(title: string): { wrap: HTMLDivElement; body: HTMLDivElement } {
     const wrap = document.createElement('div');
     // Tagged so keyboard shortcuts can tell a modal is open (don't hijack
@@ -489,6 +617,7 @@ export class EditorScene extends Phaser.Scene {
     ok.onclick = () => {
       dialogue.setLine(lineId, ta.value);
       this.renderLine();
+      this.renderTitlePreview();
       close();
       this.toast('Saved ✓');
     };

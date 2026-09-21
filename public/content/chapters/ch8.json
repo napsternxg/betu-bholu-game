@@ -4,24 +4,38 @@
       "height": 340,
       "id": "topiwala",
       "pose": "hold-hats",
-      "x": 0.35,
-      "y": 0.72
+      "x": 0.3076595472759121,
+      "y": 0.7754272517321016
     },
     {
       "hat": "picked",
       "height": 280,
       "id": "betu",
       "pose": "stand",
-      "x": 0.6,
-      "y": 0.72
+      "x": 0.5427441605208357,
+      "y": 0.8131485758275596
     },
     {
       "hat": "picked",
       "height": 240,
       "id": "bholu",
       "pose": "stand",
-      "x": 0.73,
-      "y": 0.74
+      "x": 0.6741875850455205,
+      "y": 0.823910700538876
+    },
+    {
+      "height": 180,
+      "id": "monkey",
+      "pose": "sit",
+      "x": 0.82,
+      "y": 0.28
+    },
+    {
+      "height": 180,
+      "id": "monkey",
+      "pose": "sit",
+      "x": 0.9,
+      "y": 0.38
     }
   ],
   "background": "jungle",

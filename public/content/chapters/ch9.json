@@ -22,6 +22,20 @@
       "pose": "wave",
       "x": 0.72,
       "y": 0.74
+    },
+    {
+      "height": 180,
+      "id": "monkey",
+      "pose": "sit",
+      "x": 0.84,
+      "y": 0.26
+    },
+    {
+      "height": 180,
+      "id": "monkey",
+      "pose": "sit",
+      "x": 0.92,
+      "y": 0.36
     }
   ],
   "background": "jungle",
