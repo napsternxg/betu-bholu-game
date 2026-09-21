@@ -4,6 +4,10 @@ import { TitleScene } from './scenes/TitleScene';
 import { StoryScene } from './scenes/StoryScene';
 import { EndScene } from './scenes/EndScene';
 import { EditorScene } from './scenes/EditorScene';
+import { hatTuning } from './core/HatTuning';
+
+// Parent-tuned hat anchors (from the editor) load before anything reads them.
+hatTuning.load();
 
 // 1280x800 logical canvas, FIT-scaled. Touch-first. Canvas rendering keeps
 // the self-hosted artwork reliable inside Muse's sandboxed webview.

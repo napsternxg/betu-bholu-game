@@ -20,10 +20,12 @@ export class CopycatCatch implements MiniGame {
     // hat starts exactly on the painted cap (measured from the sprite).
     overlay.add(topi.container);
 
-    // Draggable copy of the red hat, starts on his head
-    // (painted-cap bbox center measured from the sliced sprite).
-    const HAT_X = cx - 456;
-    const HAT_Y = cy - 74;
+    // Draggable copy of the red hat, starts on his head.
+    // Position comes from the same anchor Character uses for worn hats,
+    // so it sits on the painted cap instead of his face.
+    const tip = topi.hatTipPosition();
+    const HAT_X = tip.x;
+    const HAT_Y = tip.y;
     const dragHat = HatSystem.make(scene, 'red');
     dragHat.setDisplaySize(90, 74);
     dragHat.setPosition(HAT_X, HAT_Y);
@@ -42,6 +44,13 @@ export class CopycatCatch implements MiniGame {
     basket.setDisplaySize(200, 130);
     overlay.add(basket);
     const colors: HatColor[] = ['blue', 'yellow', 'green', 'red'];
+    // Slots inside the basket where caught hats pile up (relative to basket center).
+    const SLOTS = [
+      { dx: -52, dy: -2, rot: -8 },
+      { dx: -18, dy: -24, rot: 6 },
+      { dx: 18, dy: -6, rot: -5 },
+      { dx: 54, dy: -22, rot: 9 },
+    ];
     const total = colors.length;
     let caught = 0;
     const counter = label(this.host, cx + 430, cy - 280, `🧺 0/${total}`, 34);
@@ -95,15 +104,21 @@ export class CopycatCatch implements MiniGame {
             falling.on('pointerdown', () => {
               falling.disableInteractive();
               audio.pop();
+              caught++;
+              counter.setText(`🧺 ${caught}/${total}`);
+              // Land in the basket and stay there, piled with the others.
+              const slot = SLOTS[caught - 1];
+              const s = falling.scaleX;
               scene.tweens.add({
                 targets: falling,
-                x: basketX,
-                y: basketY,
-                duration: 400,
+                x: basketX + slot.dx,
+                y: basketY + slot.dy,
+                scaleX: s * 0.55,
+                scaleY: s * 0.55,
+                angle: slot.rot,
+                duration: 450,
+                ease: 'Quad.easeOut',
                 onComplete: () => {
-                  falling.destroy();
-                  caught++;
-                  counter.setText(`🧺 ${caught}/${total}`);
                   if (caught >= total) {
                     audio.fanfare();
                     scene.time.delayedCall(700, () => {

@@ -3,7 +3,8 @@
 The in-game editor (title page > Edit) exports a full story snapshot:
   { "app": "betu-bholu-story", "version": 1, "exportedAt": ...,
     "dialogue": { "hi": {...}, "en": {...} },
-    "chapters": [ {ch1}, {ch2}, ..., {ch9} ] }
+    "chapters": [ {ch1}, {ch2}, ..., {ch9} ],
+    "hatTuning": { "betu:wave": {"ox":..., "oy":..., "w":...}, ... } }
 
 When the user pastes that JSON in chat, save it to a file (e.g. /tmp/story.json)
 and run:
@@ -14,6 +15,7 @@ It validates the snapshot and overwrites:
   public/content/dialogue/hi.json
   public/content/dialogue/en.json
   public/content/chapters/ch1.json ... ch9.json
+  public/content/hats.json            (only the tuned anchors, merged)
 
 Then rebuild (`npm run build`) and redeploy so the edited story becomes the
 default for everyone. Editor snapshots already saved in a browser's
@@ -49,6 +51,22 @@ def main() -> None:
         p = CONTENT / 'chapters' / f'{c["id"]}.json'
         p.write_text(json.dumps(c, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
         print(f'wrote {p.relative_to(ROOT)}')
+
+    # Bake parent-tuned hat anchors (editor 🎩 nudge buttons) into hats.json.
+    tuning = snap.get('hatTuning') or {}
+    if tuning:
+        hp = CONTENT / 'hats.json'
+        hats = json.loads(hp.read_text(encoding='utf-8'))
+        anchors = hats.setdefault('anchors', {})
+        n = 0
+        for key, anchor in tuning.items():
+            char_id, _, pose = key.partition(':')
+            if not char_id or not pose:
+                continue
+            anchors.setdefault(char_id, {})[pose] = anchor
+            n += 1
+        hp.write_text(json.dumps(hats, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+        print(f'wrote {hp.relative_to(ROOT)} ({n} tuned anchors)')
     print('done — rebuild with: npm run build')
 
 

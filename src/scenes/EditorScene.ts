@@ -3,6 +3,8 @@ import { storyData } from '../core/StoryData';
 import { dialogue } from '../core/DialogueSystem';
 import { save } from '../core/SaveManager';
 import { Character } from '../core/Character';
+import { HatSystem } from '../core/HatSystem';
+import { hatTuning } from '../core/HatTuning';
 import { POSES, BACKGROUNDS, type ChapterJSON, type HatColor } from '../core/types';
 import { bindShortcuts } from '../core/Shortcuts';
 
@@ -154,8 +156,12 @@ export class EditorScene extends Phaser.Scene {
     // make draggable
     const b = c.container.getBounds();
     c.container.setSize(b.width, b.height);
+    // NOTE: Phaser's hit test adds the container's displayOrigin (w/2, h/2,
+    // set by setSize above) to the local point before testing the hit area,
+    // so the hit rect must live in (0, 0, w, h) space. A centered rect here
+    // never hits, which silently broke tap-select/drag since Round 3.
     c.container.setInteractive(
-      new Phaser.Geom.Rectangle(-b.width / 2, -b.height / 2, b.width, b.height),
+      new Phaser.Geom.Rectangle(0, 0, b.width, b.height),
       Phaser.Geom.Rectangle.Contains,
     );
     this.input.setDraggable(c.container);
@@ -243,33 +249,56 @@ export class EditorScene extends Phaser.Scene {
     this.hidePanel();
     const { width } = this.scale;
     const a = this.chapter.actors[this.selected];
-    this.panel = this.add.container(width / 2, 160).setDepth(25);
-    const bg = this.add.rectangle(0, 0, 1060, 84, 0x000000, 0.8).setStrokeStyle(2, 0xffca3a);
-    this.panel.add(bg);
-    const items: Array<[string, () => void]> = [
+    this.panel = this.add.container(width / 2, 178).setDepth(25);
+    this.panel.add(this.add.rectangle(0, 0, 1170, 164, 0x000000, 0.8).setStrokeStyle(2, 0xffca3a));
+
+    const btn = (x: number, y: number, label: string, cb: (() => void) | null) => {
+      const t = this.add
+        .text(x, y, label, {
+          fontFamily: FONT, fontSize: '20px', color: '#fff8e7',
+          backgroundColor: '#333333', padding: { x: 10, y: 7 },
+        })
+        .setOrigin(0, 0.5);
+      if (cb) {
+        t.setInteractive({ useHandCursor: true });
+        t.on('pointerdown', (_p: Phaser.Input.Pointer, _x: number, _y: number, event: Phaser.Types.Input.EventData) => {
+          event.stopPropagation();
+          cb();
+        });
+      }
+      this.panel!.add(t);
+      return t;
+    };
+    const row = (y: number, items: Array<[string, (() => void) | null]>) => {
+      let x = -555;
+      for (const [label, cb] of items) {
+        const t = btn(x, y, label, cb);
+        x += t.width + 12;
+      }
+    };
+
+    // Row 1: character controls, incl. the hat cycler (shows the real hat, not None).
+    row(-42, [
       [`👤 ${a.id} ▸`, () => this.cycleChar()],
       [`🎭 ${a.pose} ▸`, () => this.cyclePose()],
+      [`🎩 ${a.hat ?? 'none'} ▸`, () => this.cycleHat()],
       ['A− smaller', () => this.resize(-40)],
       ['A+ bigger', () => this.resize(40)],
       [a.flip ? '⇄ unflip' : '⇄ flip', () => this.toggleFlip()],
       ['✕', () => this.select(-1)],
-    ];
-    let x = -500;
-    for (const [label, cb] of items) {
-      const t = this.add
-        .text(x, 0, label, {
-          fontFamily: FONT, fontSize: '22px', color: '#fff8e7',
-          backgroundColor: '#333333', padding: { x: 12, y: 8 },
-        })
-        .setOrigin(0, 0.5)
-        .setInteractive({ useHandCursor: true });
-      t.on('pointerdown', (_p: Phaser.Input.Pointer, _x: number, _y: number, event: Phaser.Types.Input.EventData) => {
-        event.stopPropagation();
-        cb();
-      });
-      this.panel.add(t);
-      x += t.width + 16;
-    }
+    ]);
+
+    // Row 2: nudge this character+pose's hat anchor; saved + exported with the story.
+    const an = HatSystem.anchorFor(this, a.id, a.pose);
+    const fmt = (v: number): string => `${v < 0 ? '−' : '+'}${Math.abs(v).toFixed(3)}`;
+    row(42, [
+      [`🎩 place ${a.id}·${a.pose} (${fmt(an.ox)}, ${fmt(an.oy)})`, null],
+      ['←', () => this.nudgeHat(-0.02, 0)],
+      ['→', () => this.nudgeHat(0.02, 0)],
+      ['↑', () => this.nudgeHat(0, -0.02)],
+      ['↓', () => this.nudgeHat(0, 0.02)],
+      ['⟲ reset', () => this.resetHatAnchor()],
+    ]);
   }
 
   private hidePanel(): void {
@@ -282,11 +311,17 @@ export class EditorScene extends Phaser.Scene {
     if (!a) return;
     fn(a);
     storyData.touch();
+    this.rebuildSelected();
+    this.toast('Saved ✓');
+  }
+
+  /** Rebuild the selected actor's sprite (picks up hat/anchor changes) and refresh the panel. */
+  private rebuildSelected(): void {
+    if (this.selected < 0 || !this.chapter.actors[this.selected]) return;
     const { c } = this.chars[this.selected];
     c.destroy();
-    this.buildActor(a, this.selected);
-    this.select(this.selected); // re-select rebuilt actor
-    this.toast('Saved ✓');
+    this.buildActor(this.chapter.actors[this.selected], this.selected);
+    this.select(this.selected);
   }
 
   private cycleChar(): void {
@@ -303,6 +338,37 @@ export class EditorScene extends Phaser.Scene {
       const poses = POSES[a.id] ?? ['stand'];
       a.pose = poses[(poses.indexOf(a.pose) + 1) % poses.length];
     });
+  }
+
+  private cycleHat(): void {
+    const HATS: Array<HatColor | null> = [null, 'red', 'blue', 'yellow', 'green'];
+    this.mutateActor((a) => {
+      const cur = a.hat === 'picked' ? null : (a.hat ?? null);
+      a.hat = HATS[(HATS.indexOf(cur) + 1) % HATS.length];
+    });
+  }
+
+  /** Nudge this character+pose's hat anchor; persists to localStorage immediately. */
+  private nudgeHat(dox: number, doy: number): void {
+    const a = this.chapter.actors[this.selected];
+    if (!a) return;
+    const cur = HatSystem.anchorFor(this, a.id, a.pose);
+    hatTuning.set(a.id, a.pose, {
+      ox: Math.round((cur.ox + dox) * 1000) / 1000,
+      oy: Math.round((cur.oy + doy) * 1000) / 1000,
+      w: cur.w,
+    });
+    this.rebuildSelected();
+    this.toast('Hat position saved ✓');
+  }
+
+  /** Drop the override and fall back to the shipped hats.json anchor. */
+  private resetHatAnchor(): void {
+    const a = this.chapter.actors[this.selected];
+    if (!a) return;
+    hatTuning.remove(a.id, a.pose);
+    this.rebuildSelected();
+    this.toast('Hat position reset ✓');
   }
 
   private resize(d: number): void {
@@ -438,7 +504,7 @@ export class EditorScene extends Phaser.Scene {
     ta.style.cssText = 'width:100%;font-size:12px;padding:10px;border-radius:8px;border:2px solid #8b5a2b;box-sizing:border-box;font-family:monospace;';
     const note = document.createElement('div');
     note.textContent =
-      'This is the full story (all pages, text, character positions, backgrounds). ' +
+      'This is the full story (all pages, text, character positions, backgrounds) plus your hat position tuning. ' +
       'Paste it in chat and I will bake it into the game as the new default.';
     note.style.cssText = 'font-size:14px;color:#4a2c00;';
     const row = document.createElement('div');

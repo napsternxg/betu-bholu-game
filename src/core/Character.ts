@@ -53,6 +53,17 @@ export class Character {
     return this.hatColor;
   }
 
+  /** Screen position where a hat should sit for the current pose.
+   *  Mirrors layoutHat so free-floating hats (e.g. mini-game drag hats)
+   *  land exactly where worn hats go — single source of truth. */
+  hatTipPosition(): { x: number; y: number } {
+    const a = HatSystem.anchorFor(this.scene, this.id, this.pose);
+    return {
+      x: this.container.x + this.body.displayWidth * a.ox,
+      y: this.container.y + this.body.displayHeight * a.oy,
+    };
+  }
+
   private layoutHat(): void {
     if (!this.hat) return;
     const a = HatSystem.anchorFor(this.scene, this.id, this.pose);

@@ -1,4 +1,5 @@
 import type { ChapterJSON, Lang } from './types';
+import { hatTuning, type HatTuningMap } from './HatTuning';
 
 // The whole story is data: dialogue strings + one JSON object per chapter.
 // Shipped defaults come from content/dialogue/*.json and
@@ -16,6 +17,8 @@ export interface StorySnapshot {
   exportedAt: string;
   dialogue: Record<Lang, Record<string, string>>;
   chapters: ChapterJSON[];
+  /** Editor-tuned hat anchors, baked into content/hats.json by apply-story-json.py. */
+  hatTuning: HatTuningMap;
 }
 
 const deepCopy = <T>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
@@ -55,6 +58,9 @@ class StoryData {
       }
       this.dialogue = snap.dialogue;
       this.chapters = new Map(snap.chapters.map((c) => [c.id, c]));
+      if (snap.hatTuning && Object.keys(snap.hatTuning).length > 0) {
+        hatTuning.importAll(snap.hatTuning);
+      }
       this.hasOverrides = true;
     } catch {
       // Corrupt snapshot — fall back to shipped data.
@@ -93,6 +99,7 @@ class StoryData {
       exportedAt: new Date().toISOString(),
       dialogue: deepCopy(this.dialogue),
       chapters: this.order.map((id) => deepCopy(this.getChapter(id))),
+      hatTuning: hatTuning.export(),
     };
   }
 
@@ -112,6 +119,7 @@ class StoryData {
     } catch {
       /* noop */
     }
+    hatTuning.clear();
     await this.loadShipped();
   }
 }

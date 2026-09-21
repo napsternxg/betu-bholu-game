@@ -12,24 +12,24 @@
       "height": 190,
       "id": "monkey",
       "pose": "sit",
-      "x": 0.62,
-      "y": 0.26
+      "x": 0.52,
+      "y": 0.44
     },
     {
       "hat": "yellow",
       "height": 190,
       "id": "monkey",
       "pose": "sit",
-      "x": 0.72,
-      "y": 0.32
+      "x": 0.7,
+      "y": 0.3
     },
     {
       "hat": "green",
       "height": 190,
       "id": "monkey",
       "pose": "sit",
-      "x": 0.82,
-      "y": 0.26
+      "x": 0.79,
+      "y": 0.3
     },
     {
       "hat": "red",
@@ -37,7 +37,7 @@
       "id": "monkey",
       "pose": "sit",
       "x": 0.9,
-      "y": 0.34
+      "y": 0.4
     }
   ],
   "background": "jungle",
@@ -67,29 +67,29 @@
       "height": 190,
       "id": "monkey",
       "pose": "sit",
-      "x": 0.62,
-      "y": 0.26
+      "x": 0.52,
+      "y": 0.44
     },
     {
       "height": 190,
       "id": "monkey",
       "pose": "sit",
-      "x": 0.72,
-      "y": 0.32
+      "x": 0.7,
+      "y": 0.3
     },
     {
       "height": 190,
       "id": "monkey",
       "pose": "sit",
-      "x": 0.82,
-      "y": 0.26
+      "x": 0.79,
+      "y": 0.3
     },
     {
       "height": 190,
       "id": "monkey",
       "pose": "sit",
       "x": 0.9,
-      "y": 0.34
+      "y": 0.4
     }
   ]
 }

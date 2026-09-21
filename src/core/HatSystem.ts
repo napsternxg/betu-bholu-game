@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { HatColor } from './types';
+import { hatTuning } from './HatTuning';
 
 // One master asset (hat-white.png). Colored variants are baked once at boot
 // from the master via multiply-composite, so hats render identically in
@@ -56,6 +57,9 @@ export class HatSystem {
   }
 
   static anchorFor(scene: Phaser.Scene, charId: string, pose: string): HatAnchor {
+    // Editor-tuned overrides (localStorage) win over shipped hats.json.
+    const tuned = hatTuning.get(charId, pose);
+    if (tuned) return tuned;
     const data = scene.cache.json.get('hat-data') as {
       anchors?: Record<string, Record<string, HatAnchor> & { _default?: HatAnchor }>;
     };
