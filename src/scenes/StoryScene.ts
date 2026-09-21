@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import type { ChapterJSON, HatColor } from '../core/types';
+import type { ChapterJSON, HatColor, ActorRef } from '../core/types';
 import { chapters } from '../core/ChapterManager';
 import { dialogue } from '../core/DialogueSystem';
 import { save } from '../core/SaveManager';
@@ -57,7 +57,7 @@ export class StoryScene extends Phaser.Scene {
     }
 
     this.drawBackground();
-    this.drawActors();
+    this.buildActors(this.chapter.actors);
     this.drawChrome();
     this.showLine();
 
@@ -85,9 +85,13 @@ export class StoryScene extends Phaser.Scene {
   }
 
   // ---- actors ----
-  private drawActors(): void {
+  // Rebuildable so chapters can swap the cast between phases
+  // (ch7 actorsAfter: monkeys without hats once the caps are thrown).
+  private buildActors(actors: ActorRef[]): void {
+    for (const c of this.characters) c.destroy();
+    this.characters = [];
     const { width, height } = this.scale;
-    for (const a of this.chapter.actors) {
+    for (const a of actors) {
       const c = new Character(this, a.id, a.pose, a.x * width, a.y * height, a.height ?? 300);
       if (a.flip) c.container.setScale(-1, 1);
       // 'picked' resolves the HatPicker mini-game choice from the registry
@@ -98,12 +102,17 @@ export class StoryScene extends Phaser.Scene {
     }
   }
 
+  private useAfterActors(): void {
+    if (this.chapter.actorsAfter) this.buildActors(this.chapter.actorsAfter);
+  }
+
   // ---- dialogue + chrome ----
   private drawChrome(): void {
     const { width, height } = this.scale;
 
-    // Dialogue box
-    const boxH = 150;
+    // Dialogue box — tall enough that wrapped lines never touch its edges,
+    // and the text column stays clear of the next button on the right.
+    const boxH = 180;
     const box = this.add.rectangle(width / 2, height - boxH / 2 - 16, width - 48, boxH, 0x000000, 0.62);
     box.setStrokeStyle(3, 0xfff3d6, 0.9);
     this.dialogueText = this.add
@@ -112,7 +121,8 @@ export class StoryScene extends Phaser.Scene {
         fontSize: '30px',
         color: '#fff8e7',
         align: 'center',
-        wordWrap: { width: width - 140 },
+        lineSpacing: 6,
+        wordWrap: { width: width - 320 },
       })
       .setOrigin(0.5);
 
@@ -136,7 +146,7 @@ export class StoryScene extends Phaser.Scene {
         fontSize: '28px',
         color: '#fff8e7',
         backgroundColor: '#00000088',
-        padding: { x: 14, y: 6 },
+        padding: { x: 14, y: 10 },
       })
       .setOrigin(1, 0)
       .setInteractive({ useHandCursor: true });
@@ -144,7 +154,7 @@ export class StoryScene extends Phaser.Scene {
 
     // Mute button (for parents)
     const mute = this.add
-      .text(24, 24, '🔊', { fontSize: '32px', backgroundColor: '#00000088', padding: { x: 10, y: 6 } })
+      .text(24, 24, '🔊', { fontSize: '32px', backgroundColor: '#00000088', padding: { x: 10, y: 10 } })
       .setInteractive({ useHandCursor: true });
     mute.on('pointerdown', () => {
       mute.setText(audio.toggleMute() ? '🔇' : '🔊');
@@ -196,6 +206,7 @@ export class StoryScene extends Phaser.Scene {
       // replays the mini-game (harmless — completion state is kept).
       this.inLinesAfter = false;
       this.lineIndex = this.chapter.lines.length - 1;
+      this.buildActors(this.chapter.actors); // restore pre-game cast (hats back on)
     } else {
       return; // already at the first line of the chapter
     }
@@ -243,6 +254,7 @@ export class StoryScene extends Phaser.Scene {
         // No mini-game but has after-lines (not used in MVP, kept for safety)
         this.inLinesAfter = true;
         this.lineIndex = 0;
+        this.useAfterActors();
         this.showLine();
         return;
       }
@@ -270,6 +282,7 @@ export class StoryScene extends Phaser.Scene {
       this.overlay = null;
       this.inLinesAfter = true;
       this.lineIndex = 0;
+      this.useAfterActors();
       this.showLine();
     });
   }

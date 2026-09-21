@@ -54,5 +54,42 @@
   "title": {
     "en": "Throw the Hat!",
     "hi": "टोपी फेंको!"
-  }
+  },
+  "actorsAfter": [
+    {
+      "height": 340,
+      "id": "topiwala",
+      "pose": "stand",
+      "x": 0.22,
+      "y": 0.72
+    },
+    {
+      "height": 190,
+      "id": "monkey",
+      "pose": "sit",
+      "x": 0.62,
+      "y": 0.26
+    },
+    {
+      "height": 190,
+      "id": "monkey",
+      "pose": "sit",
+      "x": 0.72,
+      "y": 0.32
+    },
+    {
+      "height": 190,
+      "id": "monkey",
+      "pose": "sit",
+      "x": 0.82,
+      "y": 0.26
+    },
+    {
+      "height": 190,
+      "id": "monkey",
+      "pose": "sit",
+      "x": 0.9,
+      "y": 0.34
+    }
+  ]
 }

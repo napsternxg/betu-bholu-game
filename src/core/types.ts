@@ -23,6 +23,8 @@ export interface ChapterJSON {
   lines: string[];            // dialogue ids shown before the mini-game
   minigame: string | null;    // registered mini-game id
   linesAfter: string[];       // dialogue ids shown after the mini-game
+  actorsAfter?: ActorRef[];   // optional actor list for the after phase
+                              // (e.g. ch7: monkeys without hats after the throw)
   song?: string | null;       // song key: loops content/audio/song_<lang>.mp3
   songLines?: string[];       // lyric line ids the song covers (no voiceover)
   next: string | null;

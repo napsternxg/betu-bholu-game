@@ -11,6 +11,7 @@ export class AssetManager {
       }
     }
     scene.load.image('hat-white', 'assets/hats/hat-white.webp');
+    scene.load.image('basket', 'assets/props/basket.webp');
     for (const [key, url] of Object.entries(BACKGROUNDS)) {
       scene.load.image(`bg-${key}`, url);
     }

@@ -21,9 +21,12 @@ export class CopycatCatch implements MiniGame {
     overlay.add(topi.container);
 
     // Draggable copy of the red hat, starts on his head
+    // (painted-cap bbox center measured from the sliced sprite).
+    const HAT_X = cx - 456;
+    const HAT_Y = cy - 74;
     const dragHat = HatSystem.make(scene, 'red');
     dragHat.setDisplaySize(90, 74);
-    dragHat.setPosition(cx - 433, cy - 75);
+    dragHat.setPosition(HAT_X, HAT_Y);
     dragHat.setInteractive({ useHandCursor: true, draggable: true } as Phaser.Types.Input.InputConfiguration);
     overlay.add(dragHat);
     scene.input.setDraggable(dragHat);
@@ -34,7 +37,9 @@ export class CopycatCatch implements MiniGame {
 
     // Basket + counter
     const basketX = cx - 80;
-    const basket = scene.add.ellipse(basketX, groundY - 20, 170, 80, 0xb08968).setStrokeStyle(5, 0x6f4e2e);
+    const basketY = groundY - 60;
+    const basket = scene.add.image(basketX, basketY, 'basket');
+    basket.setDisplaySize(200, 130);
     overlay.add(basket);
     const colors: HatColor[] = ['blue', 'yellow', 'green', 'red'];
     const total = colors.length;
@@ -83,7 +88,7 @@ export class CopycatCatch implements MiniGame {
             overlay.add(falling);
             scene.tweens.add({
               targets: falling,
-              y: groundY - 40,
+              y: basketY,
               duration: 1300,
               ease: 'Bounce.easeOut',
             });
@@ -93,7 +98,7 @@ export class CopycatCatch implements MiniGame {
               scene.tweens.add({
                 targets: falling,
                 x: basketX,
-                y: groundY - 20,
+                y: basketY,
                 duration: 400,
                 onComplete: () => {
                   falling.destroy();
@@ -112,7 +117,7 @@ export class CopycatCatch implements MiniGame {
           });
         });
       } else {
-        scene.tweens.add({ targets: dragHat, x: cx - 433, y: cy - 75, duration: 300 });
+        scene.tweens.add({ targets: dragHat, x: HAT_X, y: HAT_Y, duration: 300 });
       }
     };
 
