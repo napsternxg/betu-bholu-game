@@ -56,7 +56,28 @@ Workspace layout:
 | `website/landing.html` | Marketing page linking into the game |
 | `index.html` | Entry page (`<div id="game-root">` + `<script src="/src/main.ts">`), Hindi `<html lang="hi">` |
 | `vite.config.ts` | `base: './'`, `build.outDir: 'dist'`, `assetsInlineLimit: 0` |
-| `package.json` | `dev` → `vite`, `build` → `tsc && vite build`, `preview` → `vite preview`, `slice` → `python3 tools/slice-sprites.py` |
+| `package.json` | `dev` → `vite`, `build` → `tsc && vite build`, `preview` → `vite preview`, `slice` → `python3 tools/slice-sprites.py`, `qa` → `python3 tools/pre-publish-check.py` |
+
+## Pre-publish check (standing)
+
+`npm run qa` builds the game and screenshot-sweeps the title page, all 9
+chapters (start + end states), the three mini-games (`?skip=1`), and the end
+screen — 20 states total. Each frame is compared against committed baselines
+in `qa/baselines/`; the check flags page errors, failed asset requests
+(the Sep 19 black-box class of bug), a mostly-dark canvas, and visual diffs
+(shifted actors, clipped sprites, lost hats). Per-run shots and a `REPORT.md`
+land in `qa/runs/<timestamp>/` (gitignored).
+
+Standing rule: after applying editor-exported story JSON, run `npm run qa`
+**before** commit/build, and only commit + build/publish once the sweep is
+clean. Baselines represent the last published build — regenerate them with
+`npm run qa -- --update-baselines` only after a publish is confirmed live,
+never to silence a diff.
+
+The script re-execs into `.venv` (created on first setup) so `npm run qa`
+works out of the box. Screenshots are environment-sensitive (Google Fonts are
+blocked in this sandbox, so text renders in the fallback font) — baselines are
+only comparable when generated and checked in the same environment.
 
 Build and run:
 

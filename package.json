@@ -15,7 +15,8 @@
     "preview": "vite preview",
     "slice": "python3 tools/slice-sprites.py",
     "webp": "python3 tools/png2webp.py",
-    "defringe": "python3 tools/defringe.py"
+    "defringe": "python3 tools/defringe.py",
+    "qa": "./.venv/bin/python tools/pre-publish-check.py"
   },
   "type": "module",
   "version": "0.1.0"
