@@ -298,3 +298,16 @@ retry, stop and report the error.
 `StoryScene.showLine()` skips voiceover for any line id listed in the
 chapter's `songLines` so the narration never talks over the chant, and
 `setLang()` swaps the song mid-loop when the language toggle is pressed.
+
+## GitHub mirror & GitHub Pages
+
+This repo is mirrored to the private GitHub repo
+`napsternxg/betu-bholu-game`; every round commit on `master` is pushed there
+(the game artifact syncs with this repo). A GitHub Actions workflow
+(`.github/workflows/pages.yml`) builds the game on each push to `master` and
+deploys `dist/` to GitHub Pages:
+
+- Live: https://napsternxg.github.io/betu-bholu-game/
+- Pages source must be "GitHub Actions" (repo Settings > Pages).
+- The Vite `base: './'` plus relative asset paths keep the build working
+  from the `/betu-bholu-game/` subpath.
