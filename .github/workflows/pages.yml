@@ -1,5 +1,5 @@
 # Build the game and publish it to GitHub Pages on every push to master.
-# Live at: https://napsternxg.github.io/betu-bholu-game/
+# Live at: https://shubhanshu.com/betu-bholu-game/
 # (Repo Settings > Pages > Source must be set to "GitHub Actions".)
 name: Deploy to GitHub Pages
 

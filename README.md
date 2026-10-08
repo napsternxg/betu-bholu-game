@@ -307,7 +307,7 @@ This repo is mirrored to the private GitHub repo
 (`.github/workflows/pages.yml`) builds the game on each push to `master` and
 deploys `dist/` to GitHub Pages:
 
-- Live: https://napsternxg.github.io/betu-bholu-game/
+- Live: https://shubhanshu.com/betu-bholu-game/ (the napsternxg.github.io Pages domain redirects to the shubhanshu.com custom domain)
 - Pages source must be "GitHub Actions" (repo Settings > Pages).
 - The Vite `base: './'` plus relative asset paths keep the build working
   from the `/betu-bholu-game/` subpath.
